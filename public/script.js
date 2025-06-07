@@ -1,0 +1,478 @@
+class NIMCETRankPredictor {
+    constructor() {
+        this.currentStep = 'phone';
+        this.userToken = localStorage.getItem('nimcetToken');
+        this.userPhone = localStorage.getItem('nimcetPhone');
+        this.userName = localStorage.getItem('nimcetName');
+        this.allColleges = [];
+        this.filteredColleges = [];
+        
+        this.initializeElements();
+        this.attachEventListeners();
+        this.checkExistingSession();
+    }
+    
+    initializeElements() {
+        // Steps
+        this.phoneStep = document.getElementById('phoneStep');
+        this.otpStep = document.getElementById('otpStep');
+        this.predictionStep = document.getElementById('predictionStep');
+        
+        // Phone verification elements
+        this.phoneInput = document.getElementById('phoneNumber');
+        this.sendOtpBtn = document.getElementById('sendOtpBtn');
+        
+        // OTP verification elements
+        this.otpInput = document.getElementById('otpInput');
+        this.verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        this.resendOtpBtn = document.getElementById('resendOtpBtn');
+        this.displayPhone = document.getElementById('displayPhone');
+        this.otpDebug = document.getElementById('otpDebug');
+        this.fullNameInput = document.getElementById('fullName');
+        this.nameInputContainer = document.getElementById('nameInputContainer');
+        
+        // Prediction elements
+        this.marksInput = document.getElementById('marksInput');
+        this.categorySelect = document.getElementById('categorySelect');
+        this.predictBtn = document.getElementById('predictBtn');
+        this.verifiedPhone = document.getElementById('verifiedPhone');
+        this.logoutBtn = document.getElementById('logoutBtn');
+        this.percentageDisplay = document.getElementById('percentageDisplay');
+        
+        // User info elements
+        this.userInfo = document.getElementById('userInfo');
+        this.userFullName = document.getElementById('userFullName');
+        this.avatar = document.getElementById('avatar');
+        this.memberSince = document.getElementById('memberSince');
+        
+        // Results elements
+        this.resultsContainer = document.getElementById('resultsContainer');
+        this.rankRange = document.getElementById('rankRange');
+        this.rankMessage = document.getElementById('rankMessage');
+        this.resultMarks = document.getElementById('resultMarks');
+        this.resultPercentage = document.getElementById('resultPercentage');
+        this.resultCategory = document.getElementById('resultCategory');
+        
+        // College elements
+        this.collegesCount = document.getElementById('collegesCount');
+        this.collegesList = document.getElementById('collegesList');
+        this.tierFilter = document.getElementById('tierFilter');
+        this.chanceFilter = document.getElementById('chanceFilter');
+        
+        // Loading and toast
+        this.loadingOverlay = document.getElementById('loadingOverlay');
+        this.toast = document.getElementById('toast');
+    }
+    
+    attachEventListeners() {
+        // Phone verification
+        this.sendOtpBtn.addEventListener('click', () => this.sendOTP());
+        this.phoneInput.addEventListener('input', () => this.validatePhone());
+        this.phoneInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendOTP();
+        });
+        
+        // OTP verification
+        this.verifyOtpBtn.addEventListener('click', () => this.verifyOTP());
+        this.resendOtpBtn.addEventListener('click', () => this.resendOTP());
+        this.otpInput.addEventListener('input', () => this.validateOTP());
+        this.otpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.verifyOTP();
+        });
+        this.fullNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.verifyOTP();
+        });
+        
+        // Prediction
+        this.predictBtn.addEventListener('click', () => this.predictRank());
+        this.marksInput.addEventListener('input', () => this.updatePercentage());
+        this.logoutBtn.addEventListener('click', () => this.logout());
+        
+        // College filters
+        this.tierFilter.addEventListener('change', () => this.filterColleges());
+        this.chanceFilter.addEventListener('change', () => this.filterColleges());
+        
+        // Enter key support for marks input
+        this.marksInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.predictRank();
+        });
+    }
+    
+    checkExistingSession() {
+        if (this.userToken && this.userPhone) {
+            this.showStep('prediction');
+            this.verifiedPhone.textContent = this.userPhone;
+            this.userFullName.textContent = this.userName || 'User';
+            this.avatar.textContent = this.userName ? this.userName.charAt(0) : 'U';
+            this.memberSince.textContent = localStorage.getItem('nimcetMemberSince') || 'Today';
+        }
+    }
+    
+    showStep(step) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById(`${step}Step`).classList.add('active');
+        this.currentStep = step;
+    }
+    
+    validatePhone() {
+        const phone = this.phoneInput.value.replace(/\D/g, '');
+        this.phoneInput.value = phone;
+        this.sendOtpBtn.disabled = phone.length !== 10;
+    }
+    
+    validateOTP() {
+        const otp = this.otpInput.value.replace(/\D/g, '');
+        this.otpInput.value = otp;
+        this.verifyOtpBtn.disabled = otp.length !== 6;
+    }
+    
+    updatePercentage() {
+        const marks = parseInt(this.marksInput.value) || 0;
+        const percentage = ((marks / 1000) * 100).toFixed(2);
+        this.percentageDisplay.textContent = marks > 0 ? `${percentage}%` : '';
+        this.predictBtn.disabled = marks <= 0 || marks > 1000;
+    }
+    
+    async sendOTP() {
+        const phoneNumber = this.phoneInput.value.trim();
+        
+        if (phoneNumber.length !== 10) {
+            this.showToast('Please enter a valid 10-digit phone number', 'error');
+            return;
+        }
+        
+        this.showLoading(true);
+        
+        try {
+            const response = await fetch('/api/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneNumber })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.displayPhone.textContent = phoneNumber;
+                if (data.debug) {
+                    this.otpDebug.innerHTML = `<strong>Debug OTP:</strong> ${data.debug}`;
+                }
+                
+                // Show name field if required
+                if (data.requiresName) {
+                    this.nameInputContainer.style.display = 'block';
+                    this.fullNameInput.focus();
+                } else {
+                    this.nameInputContainer.style.display = 'none';
+                }
+                
+                this.showStep('otp');
+                this.showToast('OTP sent successfully!', 'success');
+                this.otpInput.focus();
+            } else {
+                this.showToast(data.message || 'Failed to send OTP', 'error');
+            }
+        } catch (error) {
+            this.showToast('Network error. Please try again.', 'error');
+        }
+        
+        this.showLoading(false);
+    }
+    
+    async verifyOTP() {
+        const phoneNumber = this.displayPhone.textContent;
+        const otp = this.otpInput.value.trim();
+        const fullName = this.fullNameInput.value.trim();
+        
+        if (otp.length !== 6) {
+            this.showToast('Please enter a valid 6-digit OTP', 'error');
+            return;
+        }
+        
+        this.showLoading(true);
+        
+        try {
+            const response = await fetch('/api/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneNumber, otp, fullName })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.userToken = data.token;
+                this.userPhone = phoneNumber;
+                this.userName = data.user.fullName;
+                
+                localStorage.setItem('nimcetToken', this.userToken);
+                localStorage.setItem('nimcetPhone', this.userPhone);
+                localStorage.setItem('nimcetName', this.userName);
+                localStorage.setItem('nimcetMemberSince', data.user.memberSince);
+                
+                this.verifiedPhone.textContent = this.userPhone;
+                this.userFullName.textContent = this.userName;
+                this.avatar.textContent = this.userName.charAt(0);
+                this.memberSince.textContent = new Date(data.user.memberSince).toLocaleDateString();
+                
+                this.showStep('prediction');
+                this.showToast(`Welcome ${this.userName}!`, 'success');
+                this.marksInput.focus();
+            } else if (data.requiresName) {
+                this.nameInputContainer.style.display = 'block';
+                this.fullNameInput.focus();
+                this.showToast('Please enter your full name', 'warning');
+            } else {
+                this.showToast(data.message || 'Invalid OTP', 'error');
+            }
+        } catch (error) {
+            this.showToast('Network error. Please try again.', 'error');
+        }
+        
+        this.showLoading(false);
+    }
+    
+    async resendOTP() {
+        const phoneNumber = this.displayPhone.textContent;
+        this.showLoading(true);
+        
+        try {
+            const response = await fetch('/api/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneNumber })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.debug) {
+                    this.otpDebug.innerHTML = `<strong>Debug OTP:</strong> ${data.debug}`;
+                }
+                this.showToast('OTP resent successfully!', 'success');
+                this.otpInput.value = '';
+                this.otpInput.focus();
+            } else {
+                this.showToast(data.message || 'Failed to resend OTP', 'error');
+            }
+        } catch (error) {
+            this.showToast('Network error. Please try again.', 'error');
+        }
+        
+        this.showLoading(false);
+    }
+    
+    async predictRank() {
+        const marks = parseInt(this.marksInput.value);
+        const category = this.categorySelect.value;
+        
+        if (!marks || marks <= 0 || marks > 1000) {
+            this.showToast('Please enter valid marks between 1 and 1000', 'error');
+            return;
+        }
+        
+        this.showLoading(true);
+        
+        try {
+            const response = await fetch('/api/predict-rank', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ marks, category, token: this.userToken })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.displayResults(data.prediction);
+                this.showToast('Rank predicted successfully!', 'success');
+            } else {
+                this.showToast(data.message || 'Unable to predict rank for these marks', 'warning');
+                this.resultsContainer.style.display = 'none';
+            }
+        } catch (error) {
+            this.showToast('Network error. Please try again.', 'error');
+        }
+        
+        this.showLoading(false);
+    }
+    
+    displayResults(prediction) {
+        // Display rank results
+        this.rankRange.textContent = `${prediction.rankRange.min.toLocaleString()} - ${prediction.rankRange.max.toLocaleString()}`;
+        this.rankMessage.textContent = prediction.message;
+        this.resultMarks.textContent = `${prediction.marks}/1000`;
+        this.resultPercentage.textContent = `${prediction.additionalInfo.percentage}%`;
+        this.resultCategory.textContent = prediction.category;
+        
+        // Store colleges data
+        this.allColleges = prediction.colleges || [];
+        this.filteredColleges = [...this.allColleges];
+        
+        // Display colleges
+        this.displayColleges();
+        
+        // Show results
+        this.resultsContainer.style.display = 'block';
+        this.resultsContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    displayColleges() {
+        this.collegesCount.textContent = `${this.filteredColleges.length} colleges found`;
+        
+        if (this.filteredColleges.length === 0) {
+            this.collegesList.innerHTML = `
+                <div class="no-colleges">
+                    <i class="fas fa-university"></i>
+                    <h4>No colleges match your filters</h4>
+                    <p>Try adjusting your filter criteria</p>
+                </div>
+            `;
+            return;
+        }
+        
+        this.collegesList.innerHTML = this.filteredColleges.map(college => `
+            <div class="college-card fade-in">
+                <div class="tier-badge tier-${college.tier}">Tier ${college.tier}</div>
+                
+                <div class="college-main">
+                    <div class="college-info">
+                        <h4>${college.name}</h4>
+                        <div class="college-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${college.location}
+                        </div>
+                        <span class="college-type ${college.type === 'NIT' ? 'nit' : 'private'}">${college.type}</span>
+                    </div>
+                    
+                    <div class="chance-indicator">
+                        <span class="chance-badge ${this.getChanceClass(college.chance)}">
+                            ${this.getChanceText(college.chance)}
+                        </span>
+                        <span class="chance-percentage">${college.chance}% chance</span>
+                    </div>
+                </div>
+                
+                <div class="cutoff-info">
+                    <span class="user-rank">Your Rank: ${college.userRank}</span>
+                    <span class="college-cutoff">College Cutoff: ${college.cutoffRange}</span>
+                </div>
+                
+                <div class="college-details">
+                    <div class="detail-box">
+                        <span class="label">Fees</span>
+                        <span class="value">${college.fees}</span>
+                    </div>
+                    <div class="detail-box">
+                        <span class="label">Duration</span>
+                        <span class="value">${college.duration}</span>
+                    </div>
+                    <div class="detail-box">
+                        <span class="label">Seats</span>
+                        <span class="value">${college.seats}</span>
+                    </div>
+                </div>
+                
+                <div class="college-highlights">
+                    ${college.highlights.map(highlight => `
+                        <span class="highlight-tag">${highlight}</span>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+        
+        // Add fade-in animation
+        setTimeout(() => {
+            document.querySelectorAll('.college-card').forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                }, index * 100);
+            });
+        }, 100);
+    }
+    
+    getChanceClass(chance) {
+        if (chance >= 75) return 'chance-high';
+        if (chance >= 50) return 'chance-moderate';
+        return 'chance-low';
+    }
+    
+    getChanceText(chance) {
+        if (chance >= 75) return 'High Chance';
+        if (chance >= 50) return 'Moderate Chance';
+        return 'Low Chance';
+    }
+    
+    filterColleges() {
+        const tierFilter = this.tierFilter.value;
+        const chanceFilter = this.chanceFilter.value;
+        
+        this.filteredColleges = this.allColleges.filter(college => {
+            // Tier filter
+            if (tierFilter !== 'all' && college.tier.toString() !== tierFilter) {
+                return false;
+            }
+            
+            // Chance filter
+            if (chanceFilter !== 'all') {
+                if (chanceFilter === 'high' && college.chance < 75) return false;
+                if (chanceFilter === 'moderate' && (college.chance < 50 || college.chance >= 75)) return false;
+                if (chanceFilter === 'low' && college.chance >= 50) return false;
+            }
+            
+            return true;
+        });
+        
+        this.displayColleges();
+    }
+    
+    logout() {
+        localStorage.removeItem('nimcetToken');
+        localStorage.removeItem('nimcetPhone');
+        localStorage.removeItem('nimcetName');
+        localStorage.removeItem('nimcetMemberSince');
+        this.userToken = null;
+        this.userPhone = null;
+        this.userName = null;
+        
+        // Reset form
+        this.phoneInput.value = '';
+        this.otpInput.value = '';
+        this.fullNameInput.value = '';
+        this.marksInput.value = '';
+        this.categorySelect.value = 'General';
+        this.resultsContainer.style.display = 'none';
+        this.tierFilter.value = 'all';
+        this.chanceFilter.value = 'all';
+        this.nameInputContainer.style.display = 'none';
+        
+        // Clear colleges data
+        this.allColleges = [];
+        this.filteredColleges = [];
+        
+        this.showStep('phone');
+        this.showToast('Logged out successfully', 'success');
+    }
+    
+    showLoading(show) {
+        if (show) {
+            this.loadingOverlay.classList.add('show');
+        } else {
+            this.loadingOverlay.classList.remove('show');
+        }
+    }
+    
+    showToast(message, type = 'success') {
+        this.toast.textContent = message;
+        this.toast.className = `toast ${type}`;
+        this.toast.classList.add('show');
+        
+        setTimeout(() => {
+            this.toast.classList.remove('show');
+        }, 3000);
+    }
+}
+
+// Initialize the application when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new NIMCETRankPredictor();
+});

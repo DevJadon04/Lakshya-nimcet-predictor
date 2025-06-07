@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIMCET Rank Predictor 2025</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-laptop-code"></i>
+                <h1>NIMCET Rank Predictor</h1>
+            </div>
+            <p class="subtitle">National Institute of Technology Master of Computer Applications Common Entrance Test</p>
+            <div class="exam-info">
+                <span><i class="fas fa-calendar"></i> Exam Date: June 2025</span>
+                <span><i class="fas fa-clock"></i> Total Marks: 1000</span>
+            </div>
+        </header>
+
+        <!-- Phone Verification Step -->
+        <div id="phoneStep" class="step active">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h2>Verify Your Phone Number</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="phoneNumber" placeholder="Enter 10-digit mobile number" maxlength="10">
+                    </div>
+                    <button id="sendOtpBtn" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Send OTP
+                    </button>
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        We'll send a 6-digit OTP to verify your number
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- OTP Verification Step -->
+        <div id="otpStep" class="step">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-key"></i>
+                    <h2>Enter OTP</h2>
+                </div>
+                <div class="card-body">
+                    <p class="otp-info">OTP sent to <span id="displayPhone"></span></p>
+                    <div class="otp-debug" id="otpDebug"></div>
+                    
+                    <!-- Name Input Container -->
+                    <div id="nameInputContainer" class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="fullName" placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+                    </div>
+                    <button id="verifyOtpBtn" class="btn btn-primary">
+                        <i class="fas fa-check"></i>
+                        Verify OTP
+                    </button>
+                    <button id="resendOtpBtn" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i>
+                        Resend OTP
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rank Prediction Step -->
+        <div id="predictionStep" class="step">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calculator"></i>
+                    <h2>Predict Your NIMCET Rank</h2>
+                </div>
+                <div class="card-body">
+                    <!-- User Info Card -->
+                    <div id="userInfo" class="user-card">
+                        <div class="avatar" id="avatar">U</div>
+                        <div class="user-details">
+                            <strong id="userFullName">User Name</strong>
+                            <div id="verifiedPhone">Phone Number</div>
+                        </div>
+                        <button id="logoutBtn" class="btn-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="exam-details">
+                        <h3>NIMCET 2025 Details</h3>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <i class="fas fa-book"></i>
+                                <span>Total Questions: 120</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-star"></i>
+                                <span>Total Marks: 1000</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-minus-circle"></i>
+                                <span>Negative Marking: -25% per wrong answer</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <i class="fas fa-pencil-alt"></i>
+                        <input type="number" id="marksInput" placeholder="Enter your NIMCET marks (0-1000)" min="0" max="1000">
+                        <div class="marks-info">
+                            <span id="percentageDisplay"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <i class="fas fa-users"></i>
+                        <select id="categorySelect">
+                            <option value="General">General</option>
+                            <option value="OBC">OBC (Other Backward Classes)</option>
+                            <option value="SC">SC (Scheduled Caste)</option>
+                            <option value="ST">ST (Scheduled Tribe)</option>
+                            <option value="PWD">PWD (Person with Disability)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="predictBtn" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i>
+                        Predict My Rank & Colleges
+                    </button>
+                    
+                    <!-- Results Display -->
+                    <div id="resultsContainer" class="results-container">
+                        <!-- Rank Results -->
+                        <div class="result-card">
+                            <div class="result-header">
+                                <i class="fas fa-trophy"></i>
+                                <h3>Your Predicted Rank</h3>
+                            </div>
+                            <div class="result-body">
+                                <div class="rank-display">
+                                    <span class="rank-range" id="rankRange"></span>
+                                    <p class="rank-message" id="rankMessage"></p>
+                                </div>
+                                <div class="result-details">
+                                    <div class="detail-row">
+                                        <span class="label">Your Marks:</span>
+                                        <span class="value" id="resultMarks"></span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Percentage:</span>
+                                        <span class="value" id="resultPercentage"></span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Category:</span>
+                                        <span class="value" id="resultCategory"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- College Recommendations -->
+                        <div class="colleges-section">
+                            <div class="colleges-header">
+                                <i class="fas fa-university"></i>
+                                <h3>Recommended Colleges</h3>
+                                <span class="colleges-count" id="collegesCount"></span>
+                            </div>
+                            
+                            <!-- College Filter -->
+                            <div class="college-filters">
+                                <select id="tierFilter">
+                                    <option value="all">All Tiers</option>
+                                    <option value="1">Tier 1 (Top NITs)</option>
+                                    <option value="2">Tier 2 (Good NITs)</option>
+                                    <option value="3">Tier 3 (Other NITs)</option>
+                                </select>
+                                <select id="chanceFilter">
+                                    <option value="all">All Chances</option>
+                                    <option value="high">High Chance (75%+)</option>
+                                    <option value="moderate">Moderate Chance (50-75%)</option>
+                                    <option value="low">Low Chance (<50%)</option>
+                                </select>
+                            </div>
+                            
+                            <div id="collegesList" class="colleges-list">
+                                <!-- Colleges will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="additional-info">
+                            <h4><i class="fas fa-lightbulb"></i> Important Notes:</h4>
+                            <ul>
+                                <li>College recommendations are based on previous year cutoffs</li>
+                                <li>Actual cutoffs may vary based on exam difficulty and seat availability</li>
+                                <li>Apply to a mix of high, moderate, and low chance colleges</li>
+                                <li>Consider location, fees, and placement records while choosing</li>
+                                <li>Keep backup options ready for counseling rounds</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
