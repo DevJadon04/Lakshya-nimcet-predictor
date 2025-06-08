@@ -71,7 +71,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// NIMCET Colleges Data with Cutoff Ranks
+/// NIMCET Colleges Data with Cutoff Ranks
 const nimcetColleges = [
     // Tier 1 NITs
     {
@@ -81,6 +81,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 1, max: 150 },
+            EWS: { min: 1, max: 180 },
             OBC: { min: 1, max: 200 },
             SC: { min: 1, max: 350 },
             ST: { min: 1, max: 400 },
@@ -98,6 +99,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 1, max: 180 },
+            EWS: { min: 1, max: 220 },
             OBC: { min: 1, max: 250 },
             SC: { min: 1, max: 400 },
             ST: { min: 1, max: 450 },
@@ -115,6 +117,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 1, max: 200 },
+            EWS: { min: 1, max: 240 },
             OBC: { min: 1, max: 280 },
             SC: { min: 1, max: 450 },
             ST: { min: 1, max: 500 },
@@ -132,6 +135,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 120, max: 300 },
+            EWS: { min: 150, max: 360 },
             OBC: { min: 150, max: 400 },
             SC: { min: 200, max: 600 },
             ST: { min: 250, max: 700 },
@@ -149,6 +153,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 150, max: 350 },
+            EWS: { min: 180, max: 420 },
             OBC: { min: 200, max: 450 },
             SC: { min: 300, max: 700 },
             ST: { min: 350, max: 800 },
@@ -168,6 +173,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 300, max: 600 },
+            EWS: { min: 350, max: 720 },
             OBC: { min: 400, max: 800 },
             SC: { min: 600, max: 1200 },
             ST: { min: 700, max: 1400 },
@@ -185,6 +191,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 400, max: 800 },
+            EWS: { min: 450, max: 960 },
             OBC: { min: 500, max: 1000 },
             SC: { min: 800, max: 1500 },
             ST: { min: 900, max: 1700 },
@@ -202,6 +209,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 350, max: 700 },
+            EWS: { min: 400, max: 840 },
             OBC: { min: 450, max: 900 },
             SC: { min: 700, max: 1400 },
             ST: { min: 800, max: 1600 },
@@ -219,6 +227,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 500, max: 1000 },
+            EWS: { min: 600, max: 1200 },
             OBC: { min: 600, max: 1200 },
             SC: { min: 1000, max: 2000 },
             ST: { min: 1200, max: 2300 },
@@ -236,6 +245,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 400, max: 750 },
+            EWS: { min: 450, max: 900 },
             OBC: { min: 500, max: 950 },
             SC: { min: 800, max: 1500 },
             ST: { min: 900, max: 1700 },
@@ -255,6 +265,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 800, max: 1500 },
+            EWS: { min: 900, max: 1800 },
             OBC: { min: 1000, max: 1800 },
             SC: { min: 1500, max: 3000 },
             ST: { min: 1800, max: 3500 },
@@ -272,6 +283,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 700, max: 1400 },
+            EWS: { min: 800, max: 1680 },
             OBC: { min: 900, max: 1700 },
             SC: { min: 1400, max: 2800 },
             ST: { min: 1700, max: 3200 },
@@ -289,6 +301,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 1000, max: 2000 },
+            EWS: { min: 1100, max: 2400 },
             OBC: { min: 1200, max: 2300 },
             SC: { min: 2000, max: 4000 },
             ST: { min: 2300, max: 4500 },
@@ -306,6 +319,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 1200, max: 2500 },
+            EWS: { min: 1400, max: 3000 },
             OBC: { min: 1500, max: 2800 },
             SC: { min: 2500, max: 5000 },
             ST: { min: 2800, max: 5500 },
@@ -323,6 +337,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 1500, max: 3000 },
+            EWS: { min: 1700, max: 3600 },
             OBC: { min: 1800, max: 3500 },
             SC: { min: 3000, max: 6000 },
             ST: { min: 3500, max: 7000 },
@@ -342,6 +357,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 500, max: 1200 },
+            EWS: { min: 600, max: 1440 },
             OBC: { min: 600, max: 1400 },
             SC: { min: 1000, max: 2200 },
             ST: { min: 1200, max: 2500 },
@@ -359,6 +375,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 400, max: 1000 },
+            EWS: { min: 480, max: 1200 },
             OBC: { min: 500, max: 1200 },
             SC: { min: 800, max: 1800 },
             ST: { min: 1000, max: 2000 },
@@ -452,7 +469,25 @@ const nimcetRankData = [
     { minMarks: 350, maxMarks: 399, minRank: 2301, maxRank: 3300, category: 'PWD' },
     { minMarks: 300, maxMarks: 349, minRank: 3301, maxRank: 4800, category: 'PWD' },
     { minMarks: 250, maxMarks: 299, minRank: 4801, maxRank: 6800, category: 'PWD' },
-    { minMarks: 200, maxMarks: 249, minRank: 6801, maxRank: 9500, category: 'PWD' }
+    { minMarks: 200, maxMarks: 249, minRank: 6801, maxRank: 9500, category: 'PWD' },
+
+     // EWS Category (ADD THIS AFTER PWD CATEGORY)
+    { minMarks: 950, maxMarks: 1000, minRank: 1, maxRank: 15, category: 'EWS' },
+    { minMarks: 900, maxMarks: 949, minRank: 16, maxRank: 60, category: 'EWS' },
+    { minMarks: 850, maxMarks: 899, minRank: 61, maxRank: 180, category: 'EWS' },
+    { minMarks: 800, maxMarks: 849, minRank: 181, maxRank: 350, category: 'EWS' },
+    { minMarks: 750, maxMarks: 799, minRank: 351, maxRank: 550, category: 'EWS' },
+    { minMarks: 700, maxMarks: 749, minRank: 551, maxRank: 850, category: 'EWS' },
+    { minMarks: 650, maxMarks: 699, minRank: 851, maxRank: 1300, category: 'EWS' },
+    { minMarks: 600, maxMarks: 649, minRank: 1301, maxRank: 1900, category: 'EWS' },
+    { minMarks: 550, maxMarks: 599, minRank: 1901, maxRank: 2700, category: 'EWS' },
+    { minMarks: 500, maxMarks: 549, minRank: 2701, maxRank: 3800, category: 'EWS' },
+    { minMarks: 450, maxMarks: 499, minRank: 3801, maxRank: 5500, category: 'EWS' },
+    { minMarks: 400, maxMarks: 449, minRank: 5501, maxRank: 7500, category: 'EWS' },
+    { minMarks: 350, maxMarks: 399, minRank: 7501, maxRank: 10500, category: 'EWS' },
+    { minMarks: 300, maxMarks: 349, minRank: 10501, maxRank: 14000, category: 'EWS' },
+    { minMarks: 250, maxMarks: 299, minRank: 14001, maxRank: 17000, category: 'EWS' },
+    { minMarks: 200, maxMarks: 249, minRank: 17001, maxRank: 21000, category: 'EWS' }
 ];
 
 // Function to get eligible colleges based on rank and category

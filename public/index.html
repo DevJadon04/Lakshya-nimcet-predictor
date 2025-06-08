@@ -12,13 +12,37 @@
         <!-- Header -->
         <header class="header">
             <div class="logo">
-                <i class="fas fa-laptop-code"></i>
-                <h1>NIMCET Rank Predictor</h1>
+                <img src="/images/lakshya-logo.png" alt="Lakshya Logo" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                <i class="fas fa-laptop-code" style="display:none;"></i>
+                <h1>Lakshya MCA NIMCET College PREDICTION </h1>
             </div>
             <p class="subtitle">National Institute of Technology Master of Computer Applications Common Entrance Test</p>
             <div class="exam-info">
                 <span><i class="fas fa-calendar"></i> Exam Date: June 2025</span>
                 <span><i class="fas fa-clock"></i> Total Marks: 1000</span>
+            </div>
+            
+            <!-- Trainer Section - NEW ADDITION -->
+            <div class="trainer-section">
+                <div class="trainer-card">
+                    <div class="trainer-photo">
+                        <img src="/images/trainer.jpg" alt="NIMCET Expert Trainer" class="trainer-img">
+                    </div>
+                    <div class="trainer-info">
+                        <h3>Lakshya NIMCET Guidance</h3>
+                        <p>Get personalized preparation strategies</p>
+                        <div class="contact-info">
+                            <span class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <a href="tel:+919555031137">+919555031137</a>
+                            </span>
+                            <span class="contact-item">
+                                <i class="fas fa-whatsapp"></i>
+                                <a href="https://wa.me/+919555031137" target="_blank">WhatsApp</a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -127,12 +151,13 @@
                     
                     <div class="input-group">
                         <i class="fas fa-users"></i>
-                        <select id="categorySelect">
-                            <option value="General">General</option>
-                            <option value="OBC">OBC (Other Backward Classes)</option>
-                            <option value="SC">SC (Scheduled Caste)</option>
-                            <option value="ST">ST (Scheduled Tribe)</option>
-                            <option value="PWD">PWD (Person with Disability)</option>
+                        <select id="categorySelect" class="form-select">
+                           <option value="General">General</option>
+                           <option value="EWS">EWS (Economically Weaker Section)</option>
+                           <option value="OBC">OBC (Other Backward Classes)</option>
+                           <option value="SC">SC (Scheduled Castes)</option>
+                           <option value="ST">ST (Scheduled Tribes)</option>
+                           <option value="PWD">PWD (Persons with Disability)</option>
                         </select>
                     </div>
                     
@@ -223,6 +248,19 @@
 
         <!-- Toast Notifications -->
         <div id="toast" class="toast"></div>
+        
+        <!-- Footer with Contact - NEW ADDITION -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span>© 2025 Lakshya NIMCET Predictor</span>
+                </div>
+                <div class="footer-contact">
+                    <span><i class="fas fa-phone"></i> <a href="tel:+919555031137">+91 9555031137</a></span>
+                    <span><i class="fas fa-envelope"></i> Expert Guidance Available</span>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script src="script.js"></script>
