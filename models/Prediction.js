@@ -17,10 +17,10 @@ const predictionSchema = new mongoose.Schema({
         max: [1000, 'Marks cannot exceed 1000']
     },
     category: {
-        type: String,
-        required: [true, 'Category is required'],
-        enum: ['General', 'OBC', 'SC', 'ST', 'PWD']
-    },
+    type: String,
+    required: [true, 'Category is required'],
+    enum: ['General', 'EWS', 'OBC', 'SC', 'ST', 'PWD'] 
+   },
     predictedMinRank: {
         type: Number,
         required: true
