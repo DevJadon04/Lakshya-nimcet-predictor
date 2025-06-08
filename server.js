@@ -72,6 +72,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 /// NIMCET Colleges Data with Cutoff Ranks
+// NIMCET Colleges Data with Cutoff Ranks (Updated with EWS)
 const nimcetColleges = [
     // Tier 1 NITs
     {
@@ -117,7 +118,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 1, max: 200 },
-            EWS: { min: 1, max: 240 },
+            EWS: { min: 1, max: 250 },
             OBC: { min: 1, max: 280 },
             SC: { min: 1, max: 450 },
             ST: { min: 1, max: 500 },
@@ -135,7 +136,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 120, max: 300 },
-            EWS: { min: 150, max: 360 },
+            EWS: { min: 120, max: 380 },
             OBC: { min: 150, max: 400 },
             SC: { min: 200, max: 600 },
             ST: { min: 250, max: 700 },
@@ -153,7 +154,7 @@ const nimcetColleges = [
         tier: 1,
         cutoffs: {
             General: { min: 150, max: 350 },
-            EWS: { min: 180, max: 420 },
+            EWS: { min: 150, max: 420 },
             OBC: { min: 200, max: 450 },
             SC: { min: 300, max: 700 },
             ST: { min: 350, max: 800 },
@@ -173,7 +174,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 300, max: 600 },
-            EWS: { min: 350, max: 720 },
+            EWS: { min: 250, max: 750 },
             OBC: { min: 400, max: 800 },
             SC: { min: 600, max: 1200 },
             ST: { min: 700, max: 1400 },
@@ -191,7 +192,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 400, max: 800 },
-            EWS: { min: 450, max: 960 },
+            EWS: { min: 350, max: 950 },
             OBC: { min: 500, max: 1000 },
             SC: { min: 800, max: 1500 },
             ST: { min: 900, max: 1700 },
@@ -209,7 +210,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 350, max: 700 },
-            EWS: { min: 400, max: 840 },
+            EWS: { min: 300, max: 850 },
             OBC: { min: 450, max: 900 },
             SC: { min: 700, max: 1400 },
             ST: { min: 800, max: 1600 },
@@ -227,7 +228,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 500, max: 1000 },
-            EWS: { min: 600, max: 1200 },
+            EWS: { min: 450, max: 1200 },
             OBC: { min: 600, max: 1200 },
             SC: { min: 1000, max: 2000 },
             ST: { min: 1200, max: 2300 },
@@ -245,7 +246,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 400, max: 750 },
-            EWS: { min: 450, max: 900 },
+            EWS: { min: 350, max: 900 },
             OBC: { min: 500, max: 950 },
             SC: { min: 800, max: 1500 },
             ST: { min: 900, max: 1700 },
@@ -265,7 +266,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 800, max: 1500 },
-            EWS: { min: 900, max: 1800 },
+            EWS: { min: 700, max: 1800 },
             OBC: { min: 1000, max: 1800 },
             SC: { min: 1500, max: 3000 },
             ST: { min: 1800, max: 3500 },
@@ -283,7 +284,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 700, max: 1400 },
-            EWS: { min: 800, max: 1680 },
+            EWS: { min: 600, max: 1650 },
             OBC: { min: 900, max: 1700 },
             SC: { min: 1400, max: 2800 },
             ST: { min: 1700, max: 3200 },
@@ -301,7 +302,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 1000, max: 2000 },
-            EWS: { min: 1100, max: 2400 },
+            EWS: { min: 900, max: 2400 },
             OBC: { min: 1200, max: 2300 },
             SC: { min: 2000, max: 4000 },
             ST: { min: 2300, max: 4500 },
@@ -319,7 +320,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 1200, max: 2500 },
-            EWS: { min: 1400, max: 3000 },
+            EWS: { min: 1100, max: 3000 },
             OBC: { min: 1500, max: 2800 },
             SC: { min: 2500, max: 5000 },
             ST: { min: 2800, max: 5500 },
@@ -337,7 +338,7 @@ const nimcetColleges = [
         tier: 3,
         cutoffs: {
             General: { min: 1500, max: 3000 },
-            EWS: { min: 1700, max: 3600 },
+            EWS: { min: 1400, max: 3600 },
             OBC: { min: 1800, max: 3500 },
             SC: { min: 3000, max: 6000 },
             ST: { min: 3500, max: 7000 },
@@ -357,7 +358,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 500, max: 1200 },
-            EWS: { min: 600, max: 1440 },
+            EWS: { min: 450, max: 1400 },
             OBC: { min: 600, max: 1400 },
             SC: { min: 1000, max: 2200 },
             ST: { min: 1200, max: 2500 },
@@ -375,7 +376,7 @@ const nimcetColleges = [
         tier: 2,
         cutoffs: {
             General: { min: 400, max: 1000 },
-            EWS: { min: 480, max: 1200 },
+            EWS: { min: 350, max: 1200 },
             OBC: { min: 500, max: 1200 },
             SC: { min: 800, max: 1800 },
             ST: { min: 1000, max: 2000 },
