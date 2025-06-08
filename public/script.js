@@ -13,56 +13,64 @@ class NIMCETRankPredictor {
     }
     
     initializeElements() {
-        // Steps
-        this.phoneStep = document.getElementById('phoneStep');
-        this.otpStep = document.getElementById('otpStep');
-        this.predictionStep = document.getElementById('predictionStep');
-        
-        // Phone verification elements
-        this.phoneInput = document.getElementById('phoneNumber');
-        this.sendOtpBtn = document.getElementById('sendOtpBtn');
-        
-        // OTP verification elements
-        this.otpInput = document.getElementById('otpInput');
-        this.verifyOtpBtn = document.getElementById('verifyOtpBtn');
-        this.resendOtpBtn = document.getElementById('resendOtpBtn');
-        this.displayPhone = document.getElementById('displayPhone');
-        this.otpDebug = document.getElementById('otpDebug');
-        this.fullNameInput = document.getElementById('fullName');
-        this.nameInputContainer = document.getElementById('nameInputContainer');
-        
-        // Prediction elements
-        this.marksInput = document.getElementById('marksInput');
-        this.categorySelect = document.getElementById('categorySelect');
-        this.predictBtn = document.getElementById('predictBtn');
-        this.verifiedPhone = document.getElementById('verifiedPhone');
-        this.logoutBtn = document.getElementById('logoutBtn');
-        this.percentageDisplay = document.getElementById('percentageDisplay');
-        
-        // User info elements
-        this.userInfo = document.getElementById('userInfo');
-        this.userFullName = document.getElementById('userFullName');
-        this.avatar = document.getElementById('avatar');
-        this.memberSince = document.getElementById('memberSince');
-        
-        // Results elements
-        this.resultsContainer = document.getElementById('resultsContainer');
-        this.rankRange = document.getElementById('rankRange');
-        this.rankMessage = document.getElementById('rankMessage');
-        this.resultMarks = document.getElementById('resultMarks');
-        this.resultPercentage = document.getElementById('resultPercentage');
-        this.resultCategory = document.getElementById('resultCategory');
-        
-        // College elements
-        this.collegesCount = document.getElementById('collegesCount');
-        this.collegesList = document.getElementById('collegesList');
-        this.tierFilter = document.getElementById('tierFilter');
-        this.chanceFilter = document.getElementById('chanceFilter');
-        
-        // Loading and toast
-        this.loadingOverlay = document.getElementById('loadingOverlay');
-        this.toast = document.getElementById('toast');
-    }
+    // Steps
+    this.phoneStep = document.getElementById('phoneStep');
+    this.otpStep = document.getElementById('otpStep');
+    this.predictionStep = document.getElementById('predictionStep');
+    
+    // Phone verification elements
+    this.phoneInput = document.getElementById('phoneNumber');
+    this.sendOtpBtn = document.getElementById('sendOtpBtn');
+    
+    // OTP verification elements
+    this.otpInput = document.getElementById('otpInput');
+    this.verifyOtpBtn = document.getElementById('verifyOtpBtn');
+    this.resendOtpBtn = document.getElementById('resendOtpBtn');
+    this.displayPhone = document.getElementById('displayPhone');
+    this.otpDebug = document.getElementById('otpDebug');
+    this.fullNameInput = document.getElementById('fullName');
+    this.nameInputContainer = document.getElementById('nameInputContainer');
+    
+    // Prediction elements
+    this.marksInput = document.getElementById('marksInput');
+    this.categorySelect = document.getElementById('categorySelect');
+    this.predictBtn = document.getElementById('predictBtn');
+    this.verifiedPhone = document.getElementById('verifiedPhone');
+    this.logoutBtn = document.getElementById('logoutBtn');
+    this.percentageDisplay = document.getElementById('percentageDisplay');
+    
+    // User info elements - WITH NULL CHECKS
+    this.userInfo = document.getElementById('userInfo');
+    this.userFullName = document.getElementById('userFullName');
+    this.avatar = document.getElementById('avatar');
+    this.memberSince = document.getElementById('memberSince');
+    
+    // Results elements
+    this.resultsContainer = document.getElementById('resultsContainer');
+    this.rankRange = document.getElementById('rankRange');
+    this.rankMessage = document.getElementById('rankMessage');
+    this.resultMarks = document.getElementById('resultMarks');
+    this.resultPercentage = document.getElementById('resultPercentage');
+    this.resultCategory = document.getElementById('resultCategory');
+    
+    // College elements
+    this.collegesCount = document.getElementById('collegesCount');
+    this.collegesList = document.getElementById('collegesList');
+    this.tierFilter = document.getElementById('tierFilter');
+    this.chanceFilter = document.getElementById('chanceFilter');
+    
+    // Loading and toast
+    this.loadingOverlay = document.getElementById('loadingOverlay');
+    this.toast = document.getElementById('toast');
+    
+    // DEBUG: Log missing elements
+    console.log('DOM Elements Check:', {
+        verifiedPhone: !!this.verifiedPhone,
+        userFullName: !!this.userFullName,
+        avatar: !!this.avatar,
+        memberSince: !!this.memberSince
+    });
+}
     
     attachEventListeners() {
         // Phone verification
@@ -184,28 +192,14 @@ class NIMCETRankPredictor {
     const otp = this.otpInput.value.trim();
     const fullName = this.fullNameInput.value.trim();
     
-    console.log('Verify OTP called:', { phoneNumber, otp, fullName }); // Debug log
-    
     if (otp.length !== 6) {
         this.showToast('Please enter a valid 6-digit OTP', 'error');
-        return;
-    }
-    
-    // Check if name is visible and required
-    const nameContainer = this.nameInputContainer;
-    const isNameVisible = nameContainer && nameContainer.style.display !== 'none';
-    
-    if (isNameVisible && (!fullName || fullName.length < 2)) {
-        this.showToast('Please enter your full name (minimum 2 characters)', 'error');
-        this.fullNameInput.focus();
         return;
     }
     
     this.showLoading(true);
     
     try {
-        console.log('Making API request to /api/verify-otp'); // Debug log
-        
         const requestBody = {
             phoneNumber: phoneNumber,
             otp: otp
@@ -216,8 +210,6 @@ class NIMCETRankPredictor {
             requestBody.fullName = fullName;
         }
         
-        console.log('Request body:', requestBody); // Debug log
-        
         const response = await fetch('/api/verify-otp', {
             method: 'POST',
             headers: { 
@@ -227,43 +219,68 @@ class NIMCETRankPredictor {
             body: JSON.stringify(requestBody)
         });
         
-        console.log('Response status:', response.status); // Debug log
-        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('Response data:', data); // Debug log
         
         if (data.success) {
+            // Store user data
             this.userToken = data.token;
             this.userPhone = phoneNumber;
             this.userName = data.user.fullName;
             
+            // Save to localStorage
             localStorage.setItem('nimcetToken', this.userToken);
             localStorage.setItem('nimcetPhone', this.userPhone);
             localStorage.setItem('nimcetName', this.userName);
             localStorage.setItem('nimcetMemberSince', data.user.memberSince);
             
-            this.verifiedPhone.textContent = this.userPhone;
-            this.userFullName.textContent = this.userName;
-            this.avatar.textContent = this.userName.charAt(0);
-            this.memberSince.textContent = new Date(data.user.memberSince).toLocaleDateString();
+            // SAFE DOM UPDATES - Check if elements exist
+            if (this.verifiedPhone) {
+                this.verifiedPhone.textContent = this.userPhone;
+            }
             
+            if (this.userFullName) {
+                this.userFullName.textContent = this.userName;
+            }
+            
+            if (this.avatar) {
+                this.avatar.textContent = this.userName.charAt(0).toUpperCase();
+            }
+            
+            if (this.memberSince) {
+                try {
+                    this.memberSince.textContent = new Date(data.user.memberSince).toLocaleDateString();
+                } catch (e) {
+                    this.memberSince.textContent = 'Today';
+                }
+            }
+            
+            // Show prediction step
             this.showStep('prediction');
             this.showToast(`Welcome ${this.userName}!`, 'success');
-            this.marksInput.focus();
+            
+            // Focus on marks input if it exists
+            if (this.marksInput) {
+                setTimeout(() => this.marksInput.focus(), 100);
+            }
+            
         } else if (data.requiresName) {
-            this.nameInputContainer.style.display = 'block';
-            this.fullNameInput.focus();
+            if (this.nameInputContainer) {
+                this.nameInputContainer.style.display = 'block';
+            }
+            if (this.fullNameInput) {
+                this.fullNameInput.focus();
+            }
             this.showToast('Please enter your full name', 'warning');
         } else {
             this.showToast(data.message || 'Invalid OTP. Please try again.', 'error');
         }
     } catch (error) {
         console.error('Verify OTP Error:', error);
-        this.showToast('Network error. Please check your connection and try again.', 'error');
+        this.showToast('Verification failed. Please try again.', 'error');
     }
     
     this.showLoading(false);
