@@ -27,7 +27,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/nimcet-pr
     console.log('📝 Make sure MongoDB is running locally or check your MONGODB_URI');
 });
 
-// Twilio Configuration (same as before)
+// Twilio Configuration
 const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN 
     ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
     : null;
@@ -39,7 +39,7 @@ console.log('🔧 Configuration Status:');
 console.log('- MongoDB:', mongoose.connection.readyState === 1 ? '✅ Connected' : '⏳ Connecting...');
 console.log('- Twilio SMS:', SMS_ENABLED ? '✅ Enabled' : '❌ Disabled');
 
-// SMS Function (same as before)
+// SMS Function
 const sendSMS = async (phoneNumber, message) => {
     try {
         if (!SMS_ENABLED) {
@@ -71,7 +71,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// NIMCET Colleges Data with Cutoff Ranks (Same as before)
+// NIMCET Colleges Data with Cutoff Ranks
 const nimcetColleges = [
     // Tier 1 NITs
     {
@@ -387,7 +387,7 @@ const nimcetRankData = [
     { minMarks: 450, maxMarks: 499, minRank: 3501, maxRank: 5000, category: 'General' },
     { minMarks: 400, maxMarks: 449, minRank: 5001, maxRank: 7000, category: 'General' },
     { minMarks: 350, maxMarks: 399, minRank: 7001, maxRank: 10000, category: 'General' },
-    { minMarks: 300, maxMarks: 349, minRank: 10001, maxRank: 13000, category: 'General' },
+        { minMarks: 300, maxMarks: 349, minRank: 10001, maxRank: 13000, category: 'General' },
     { minMarks: 250, maxMarks: 299, minRank: 13001, maxRank: 16000, category: 'General' },
     { minMarks: 200, maxMarks: 249, minRank: 16001, maxRank: 20000, category: 'General' },
     
@@ -427,7 +427,6 @@ const nimcetRankData = [
     // ST Category
     { minMarks: 800, maxMarks: 1000, minRank: 1, maxRank: 50, category: 'ST' },
     { minMarks: 750, maxMarks: 799, minRank: 51, maxRank: 150, category: 'ST' },
-        // ST Category (continuing)
     { minMarks: 700, maxMarks: 749, minRank: 151, maxRank: 350, category: 'ST' },
     { minMarks: 650, maxMarks: 699, minRank: 351, maxRank: 600, category: 'ST' },
     { minMarks: 600, maxMarks: 649, minRank: 601, maxRank: 900, category: 'ST' },
@@ -568,7 +567,8 @@ app.post('/api/send-otp', async (req, res) => {
         });
     }
 });
-/// Verify OTP Route (Updated with Full Name)
+
+// Verify OTP Route (Updated with Full Name)
 app.post('/api/verify-otp', async (req, res) => {
     try {
         const { phoneNumber, otp, fullName } = req.body;
@@ -660,7 +660,6 @@ app.post('/api/verify-otp', async (req, res) => {
     }
 });
 
-// Predict Rank with College Recommendations
 // Predict Rank Route (Updated for MongoDB)
 app.post('/api/predict-rank', async (req, res) => {
     try {
@@ -690,7 +689,7 @@ app.post('/api/predict-rank', async (req, res) => {
             });
         }
         
-        // Find rank prediction (your existing logic)
+        // Find rank prediction
         const prediction = nimcetRankData.find(p => 
             marks >= p.minMarks && marks <= p.maxMarks && p.category === category
         );
@@ -702,7 +701,7 @@ app.post('/api/predict-rank', async (req, res) => {
             });
         }
         
-        // Get eligible colleges (your existing logic)
+        // Get eligible colleges
         const eligibleColleges = getEligibleColleges(prediction.minRank, prediction.maxRank, category);
         
         // Calculate additional statistics
@@ -769,6 +768,7 @@ app.post('/api/predict-rank', async (req, res) => {
         });
     }
 });
+
 // Get all colleges (for reference)
 app.get('/api/colleges', (req, res) => {
     try {
@@ -796,7 +796,7 @@ app.get('/api/colleges', (req, res) => {
         res.json({ 
             success: true, 
             colleges: filteredColleges,
-            total: filteredColleges.length,
+                        total: filteredColleges.length,
             totalAvailable: nimcetColleges.length
         });
     } catch (error) {
@@ -805,31 +805,30 @@ app.get('/api/colleges', (req, res) => {
     }
 });
 
-// Get user predictions history
-app.get('/api/user/predictions', (req, res) => {
+// Get user predictions history (Updated for MongoDB)
+app.get('/api/user/predictions', async (req, res) => {
     try {
         const { token } = req.query;
-        const users = readJSON(usersFile);
-        const predictions = readJSON(predictionsFile);
         
         if (!token) {
             return res.status(400).json({ success: false, message: 'Token is required' });
         }
         
-        const user = users.find(u => u.sessionToken === token && u.isVerified);
+        const user = await User.findOne({ sessionToken: token, isVerified: true });
         if (!user) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
         
-        const userPredictions = predictions
-            .filter(p => p.userId === user.id)
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const userPredictions = await Prediction.find({ userId: user._id })
+            .sort({ createdAt: -1 })
+            .populate('userId', 'fullName phoneNumber createdAt');
         
         res.json({
             success: true,
             predictions: userPredictions,
             total: userPredictions.length,
             user: {
+                fullName: user.fullName,
                 phoneNumber: user.phoneNumber,
                 memberSince: user.createdAt
             }
@@ -840,18 +839,18 @@ app.get('/api/user/predictions', (req, res) => {
     }
 });
 
-// Admin endpoint to get all predictions (for analytics)
-app.get('/api/admin/predictions', (req, res) => {
+// Admin endpoint to get all predictions (Updated for MongoDB)
+app.get('/api/admin/predictions', async (req, res) => {
     try {
         const { adminKey } = req.query;
         
-        // Simple admin authentication (use proper auth in production)
+        // Simple admin authentication
         if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
         
-        const predictions = readJSON(predictionsFile);
-        const users = readJSON(usersFile);
+        const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber createdAt');
+        const users = await User.find();
         
         // Calculate statistics
         const stats = {
@@ -886,17 +885,16 @@ app.get('/api/admin/predictions', (req, res) => {
     }
 });
 
-// Logout endpoint
-app.post('/api/logout', (req, res) => {
+// Logout endpoint (Updated for MongoDB)
+app.post('/api/logout', async (req, res) => {
     try {
         const { token } = req.body;
-        const users = readJSON(usersFile);
         
-        const user = users.find(u => u.sessionToken === token);
+        const user = await User.findOne({ sessionToken: token });
         if (user) {
             user.sessionToken = null;
-            user.loggedOutAt = new Date().toISOString();
-            writeJSON(usersFile, users);
+            user.lastLoginAt = new Date();
+            await user.save();
         }
         
         res.json({ success: true, message: 'Logged out successfully' });
@@ -906,17 +904,19 @@ app.post('/api/logout', (req, res) => {
     }
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Health check endpoint (Updated for MongoDB)
+app.get('/health', async (req, res) => {
     try {
-        const users = readJSON(usersFile);
-        const predictions = readJSON(predictionsFile);
+        const totalUsers = await User.countDocuments();
+        const totalPredictions = await Prediction.countDocuments();
+        const verifiedUsers = await User.countDocuments({ isVerified: true });
         
         res.json({ 
             status: 'OK', 
             timestamp: new Date().toISOString(),
             uptime: process.uptime(),
-            version: '2.0.0',
+            version: '3.0.0',
+            database: 'MongoDB',
             examInfo: {
                 name: 'NIMCET 2024',
                 totalMarks: 1000,
@@ -925,17 +925,19 @@ app.get('/health', (req, res) => {
             data: {
                 colleges: nimcetColleges.length,
                 rankRanges: nimcetRankData.length,
-                totalUsers: users.length,
-                totalPredictions: predictions.length,
-                verifiedUsers: users.filter(u => u.isVerified).length
+                totalUsers: totalUsers,
+                totalPredictions: totalPredictions,
+                verifiedUsers: verifiedUsers
             },
             features: [
-                'Phone Verification',
-                'Rank Prediction',
+                'Phone Verification with SMS',
+                'Full Name Collection',
+                'MongoDB Database Storage',
+                'Rank Prediction (1000 marks)',
                 'College Recommendations', 
                 'Category-wise Analysis',
-                'Admission Chances',
-                'College Filtering'
+                'Admission Chances Calculator',
+                'College Filtering System'
             ]
         });
     } catch (error) {
@@ -982,12 +984,18 @@ app.use((err, req, res, next) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('SIGTERM received. Shutting down gracefully...');
-    process.exit(0);
+    mongoose.connection.close(() => {
+        console.log('MongoDB connection closed.');
+        process.exit(0);
+    });
 });
 
 process.on('SIGINT', () => {
     console.log('SIGINT received. Shutting down gracefully...');
-    process.exit(0);
+    mongoose.connection.close(() => {
+        console.log('MongoDB connection closed.');
+        process.exit(0);
+    });
 });
 
 // Start server
