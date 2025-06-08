@@ -180,57 +180,94 @@ class NIMCETRankPredictor {
     }
     
     async verifyOTP() {
-        const phoneNumber = this.displayPhone.textContent;
-        const otp = this.otpInput.value.trim();
-        const fullName = this.fullNameInput.value.trim();
-        
-        if (otp.length !== 6) {
-            this.showToast('Please enter a valid 6-digit OTP', 'error');
-            return;
-        }
-        
-        this.showLoading(true);
-        
-        try {
-            const response = await fetch('/api/verify-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phoneNumber, otp, fullName })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.userToken = data.token;
-                this.userPhone = phoneNumber;
-                this.userName = data.user.fullName;
-                
-                localStorage.setItem('nimcetToken', this.userToken);
-                localStorage.setItem('nimcetPhone', this.userPhone);
-                localStorage.setItem('nimcetName', this.userName);
-                localStorage.setItem('nimcetMemberSince', data.user.memberSince);
-                
-                this.verifiedPhone.textContent = this.userPhone;
-                this.userFullName.textContent = this.userName;
-                this.avatar.textContent = this.userName.charAt(0);
-                this.memberSince.textContent = new Date(data.user.memberSince).toLocaleDateString();
-                
-                this.showStep('prediction');
-                this.showToast(`Welcome ${this.userName}!`, 'success');
-                this.marksInput.focus();
-            } else if (data.requiresName) {
-                this.nameInputContainer.style.display = 'block';
-                this.fullNameInput.focus();
-                this.showToast('Please enter your full name', 'warning');
-            } else {
-                this.showToast(data.message || 'Invalid OTP', 'error');
-            }
-        } catch (error) {
-            this.showToast('Network error. Please try again.', 'error');
-        }
-        
-        this.showLoading(false);
+    const phoneNumber = this.displayPhone.textContent;
+    const otp = this.otpInput.value.trim();
+    const fullName = this.fullNameInput.value.trim();
+    
+    console.log('Verify OTP called:', { phoneNumber, otp, fullName }); // Debug log
+    
+    if (otp.length !== 6) {
+        this.showToast('Please enter a valid 6-digit OTP', 'error');
+        return;
     }
+    
+    // Check if name is visible and required
+    const nameContainer = this.nameInputContainer;
+    const isNameVisible = nameContainer && nameContainer.style.display !== 'none';
+    
+    if (isNameVisible && (!fullName || fullName.length < 2)) {
+        this.showToast('Please enter your full name (minimum 2 characters)', 'error');
+        this.fullNameInput.focus();
+        return;
+    }
+    
+    this.showLoading(true);
+    
+    try {
+        console.log('Making API request to /api/verify-otp'); // Debug log
+        
+        const requestBody = {
+            phoneNumber: phoneNumber,
+            otp: otp
+        };
+        
+        // Only include fullName if it's provided
+        if (fullName && fullName.length >= 2) {
+            requestBody.fullName = fullName;
+        }
+        
+        console.log('Request body:', requestBody); // Debug log
+        
+        const response = await fetch('/api/verify-otp', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        console.log('Response status:', response.status); // Debug log
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Response data:', data); // Debug log
+        
+        if (data.success) {
+            this.userToken = data.token;
+            this.userPhone = phoneNumber;
+            this.userName = data.user.fullName;
+            
+            localStorage.setItem('nimcetToken', this.userToken);
+            localStorage.setItem('nimcetPhone', this.userPhone);
+            localStorage.setItem('nimcetName', this.userName);
+            localStorage.setItem('nimcetMemberSince', data.user.memberSince);
+            
+            this.verifiedPhone.textContent = this.userPhone;
+            this.userFullName.textContent = this.userName;
+            this.avatar.textContent = this.userName.charAt(0);
+            this.memberSince.textContent = new Date(data.user.memberSince).toLocaleDateString();
+            
+            this.showStep('prediction');
+            this.showToast(`Welcome ${this.userName}!`, 'success');
+            this.marksInput.focus();
+        } else if (data.requiresName) {
+            this.nameInputContainer.style.display = 'block';
+            this.fullNameInput.focus();
+            this.showToast('Please enter your full name', 'warning');
+        } else {
+            this.showToast(data.message || 'Invalid OTP. Please try again.', 'error');
+        }
+    } catch (error) {
+        console.error('Verify OTP Error:', error);
+        this.showToast('Network error. Please check your connection and try again.', 'error');
+    }
+    
+    this.showLoading(false);
+}
     
     async resendOTP() {
         const phoneNumber = this.displayPhone.textContent;
@@ -261,6 +298,31 @@ class NIMCETRankPredictor {
         
         this.showLoading(false);
     }
+    async makeAPICall(url, data, method = 'POST') {
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: method !== 'GET' ? JSON.stringify(data) : undefined
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`API Error (${response.status}):`, errorText);
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Network connection failed. Please check your internet.');
+        }
+        throw error;
+    }
+}
     
     async predictRank() {
         const marks = parseInt(this.marksInput.value);
@@ -292,6 +354,7 @@ class NIMCETRankPredictor {
         } catch (error) {
             this.showToast('Network error. Please try again.', 'error');
         }
+        
         
         this.showLoading(false);
     }
