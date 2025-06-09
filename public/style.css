@@ -236,9 +236,9 @@ body {
         margin-left: 6px;
     }
     
-    .contact-item a {
+    /* .contact-item a {
         font-size: 14px;
-    }
+    } */
 }
 
 @media (max-width: 480px) {
