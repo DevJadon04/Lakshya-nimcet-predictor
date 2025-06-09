@@ -73,432 +73,359 @@ app.use(express.static('public'));
 
 /// NIMCET Colleges Data with Cutoff Ranks
 // NIMCET Colleges Data with Cutoff Ranks (Updated with EWS)
+// NIMCET Colleges Data - 13 Colleges as per Customer Requirements
 const nimcetColleges = [
-    // Tier 1 NITs
+    // 1. NIT Trichy - Under 100 Rank
     {
         name: "NIT Trichy (National Institute of Technology, Tiruchirappalli)",
         location: "Tiruchirappalli, Tamil Nadu",
         type: "NIT",
         tier: 1,
         cutoffs: {
-            General: { min: 1, max: 150 },
-            EWS: { min: 1, max: 180 },
-            OBC: { min: 1, max: 200 },
-            SC: { min: 1, max: 350 },
-            ST: { min: 1, max: 400 },
-            PWD: { min: 1, max: 300 }
+            General: { min: 1, max: 100 },
+            EWS: { min: 1, max: 120 },
+            OBC: { min: 1, max: 150 },
+            SC: { min: 1, max: 200 },
+            ST: { min: 1, max: 250 },
+            PWD: { min: 1, max: 180 }
         },
         fees: "₹1.5 Lakhs (Total)",
         duration: "3 Years",
         seats: 60,
         highlights: ["Top NIT for MCA", "Excellent Placement Record", "Industry Partnerships"]
     },
+
+    // 2. NIT Delhi - Under 120 Rank
+    {
+        name: "NIT Delhi (National Institute of Technology Delhi)",
+        location: "New Delhi, Delhi",
+        type: "NIT",
+        tier: 1,
+        cutoffs: {
+            General: { min: 1, max: 120 },
+            EWS: { min: 1, max: 145 },
+            OBC: { min: 1, max: 180 },
+            SC: { min: 1, max: 240 },
+            ST: { min: 1, max: 300 },
+            PWD: { min: 1, max: 220 }
+        },
+        fees: "₹1.6 Lakhs (Total)",
+        duration: "3 Years",
+        seats: 54,
+        highlights: ["Capital Location", "Top Industry Exposure", "Metro Connectivity"]
+    },
+
+    // 3. NIT Warangal - Under 200 Rank
     {
         name: "NIT Warangal (National Institute of Technology, Warangal)",
         location: "Warangal, Telangana",
         type: "NIT",
         tier: 1,
         cutoffs: {
-            General: { min: 1, max: 180 },
-            EWS: { min: 1, max: 220 },
-            OBC: { min: 1, max: 250 },
+            General: { min: 1, max: 200 },
+            EWS: { min: 1, max: 240 },
+            OBC: { min: 1, max: 300 },
             SC: { min: 1, max: 400 },
-            ST: { min: 1, max: 450 },
-            PWD: { min: 1, max: 350 }
+            ST: { min: 1, max: 500 },
+            PWD: { min: 1, max: 360 }
         },
         fees: "₹1.4 Lakhs (Total)",
         duration: "3 Years",
-        seats: 54,
+        seats: 60,
         highlights: ["Research Excellence", "Strong Alumni Network", "Tech Giants Recruitment"]
     },
-    {
-        name: "NIT Surathkal (National Institute of Technology Karnataka)",
-        location: "Surathkal, Karnataka",
-        type: "NIT",
-        tier: 1,
-        cutoffs: {
-            General: { min: 1, max: 200 },
-            EWS: { min: 1, max: 250 },
-            OBC: { min: 1, max: 280 },
-            SC: { min: 1, max: 450 },
-            ST: { min: 1, max: 500 },
-            PWD: { min: 1, max: 400 }
-        },
-        fees: "₹1.6 Lakhs (Total)",
-        duration: "3 Years",
-        seats: 48,
-        highlights: ["Coastal Campus", "Strong Industry Connect", "International Collaborations"]
-    },
+
+    // 4. NIT Allahabad - Under 250 Rank
     {
         name: "NIT Allahabad (Motilal Nehru National Institute of Technology)",
         location: "Prayagraj, Uttar Pradesh",
         type: "NIT",
         tier: 1,
         cutoffs: {
-            General: { min: 120, max: 300 },
-            EWS: { min: 120, max: 380 },
-            OBC: { min: 150, max: 400 },
-            SC: { min: 200, max: 600 },
-            ST: { min: 250, max: 700 },
-            PWD: { min: 200, max: 500 }
+            General: { min: 120, max: 250 },
+            EWS: { min: 150, max: 300 },
+            OBC: { min: 180, max: 375 },
+            SC: { min: 240, max: 500 },
+            ST: { min: 300, max: 625 },
+            PWD: { min: 200, max: 450 }
         },
         fees: "₹1.3 Lakhs (Total)",
         duration: "3 Years",
         seats: 60,
         highlights: ["Historic Institution", "Strong Faculty", "Good Placement Support"]
     },
-    {
-        name: "NIT Calicut (National Institute of Technology Calicut)",
-        location: "Kozhikode, Kerala",
-        type: "NIT",
-        tier: 1,
-        cutoffs: {
-            General: { min: 150, max: 350 },
-            EWS: { min: 150, max: 420 },
-            OBC: { min: 200, max: 450 },
-            SC: { min: 300, max: 700 },
-            ST: { min: 350, max: 800 },
-            PWD: { min: 250, max: 600 }
-        },
-        fees: "₹1.5 Lakhs (Total)",
-        duration: "3 Years",
-        seats: 45,
-        highlights: ["Beautiful Campus", "Quality Education", "Cultural Diversity"]
-    },
 
-    // Tier 2 NITs
+    // 5. NIT Bhopal - Under 350 Rank
     {
         name: "NIT Bhopal (Maulana Azad National Institute of Technology)",
         location: "Bhopal, Madhya Pradesh",
         type: "NIT",
         tier: 2,
         cutoffs: {
-            General: { min: 300, max: 600 },
-            EWS: { min: 250, max: 750 },
-            OBC: { min: 400, max: 800 },
-            SC: { min: 600, max: 1200 },
-            ST: { min: 700, max: 1400 },
-            PWD: { min: 500, max: 1000 }
+            General: { min: 200, max: 350 },
+            EWS: { min: 240, max: 420 },
+            OBC: { min: 300, max: 525 },
+            SC: { min: 400, max: 700 },
+            ST: { min: 500, max: 875 },
+            PWD: { min: 350, max: 630 }
         },
         fees: "₹1.2 Lakhs (Total)",
         duration: "3 Years",
         seats: 54,
         highlights: ["Central Location", "Growing Reputation", "Affordable Fees"]
     },
-    {
-        name: "NIT Jaipur (Malaviya National Institute of Technology)",
-        location: "Jaipur, Rajasthan",
-        type: "NIT",
-        tier: 2,
-        cutoffs: {
-            General: { min: 400, max: 800 },
-            EWS: { min: 350, max: 950 },
-            OBC: { min: 500, max: 1000 },
-            SC: { min: 800, max: 1500 },
-            ST: { min: 900, max: 1700 },
-            PWD: { min: 600, max: 1200 }
-        },
-        fees: "₹1.3 Lakhs (Total)",
-        duration: "3 Years",
-        seats: 48,
-        highlights: ["Pink City Campus", "Industry Connections", "Cultural Heritage"]
-    },
+
+    // 6. NIT Kurukshetra - Under 400 Rank
     {
         name: "NIT Kurukshetra (National Institute of Technology Kurukshetra)",
         location: "Kurukshetra, Haryana",
         type: "NIT",
         tier: 2,
         cutoffs: {
-            General: { min: 350, max: 700 },
-            EWS: { min: 300, max: 850 },
-            OBC: { min: 450, max: 900 },
-            SC: { min: 700, max: 1400 },
-            ST: { min: 800, max: 1600 },
-            PWD: { min: 550, max: 1100 }
+            General: { min: 250, max: 400 },
+            EWS: { min: 300, max: 480 },
+            OBC: { min: 375, max: 600 },
+            SC: { min: 500, max: 800 },
+            ST: { min: 625, max: 1000 },
+            PWD: { min: 450, max: 720 }
         },
         fees: "₹1.4 Lakhs (Total)",
         duration: "3 Years",
         seats: 54,
         highlights: ["NCR Proximity", "Good Connectivity", "Emerging Programs"]
     },
-    {
-        name: "NIT Durgapur (National Institute of Technology Durgapur)",
-        location: "Durgapur, West Bengal",
-        type: "NIT",
-        tier: 2,
-        cutoffs: {
-            General: { min: 500, max: 1000 },
-            EWS: { min: 450, max: 1200 },
-            OBC: { min: 600, max: 1200 },
-            SC: { min: 1000, max: 2000 },
-            ST: { min: 1200, max: 2300 },
-            PWD: { min: 800, max: 1600 }
-        },
-        fees: "₹1.1 Lakhs (Total)",
-        duration: "3 Years",
-        seats: 45,
-        highlights: ["Industrial Belt", "Research Opportunities", "Lower Fees"]
-    },
-    {
-        name: "NIT Rourkela (National Institute of Technology Rourkela)",
-        location: "Rourkela, Odisha",
-        type: "NIT",
-        tier: 2,
-        cutoffs: {
-            General: { min: 400, max: 750 },
-            EWS: { min: 350, max: 900 },
-            OBC: { min: 500, max: 950 },
-            SC: { min: 800, max: 1500 },
-            ST: { min: 900, max: 1700 },
-            PWD: { min: 600, max: 1200 }
-        },
-        fees: "₹1.2 Lakhs (Total)",
-        duration: "3 Years",
-        seats: 48,
-        highlights: ["Large Campus", "Sports Excellence", "Technical Festivals"]
-    },
 
-    // Tier 3 NITs
+    // 7. NIT Patna - Under 450 Rank
     {
         name: "NIT Patna (National Institute of Technology Patna)",
         location: "Patna, Bihar",
         type: "NIT",
-        tier: 3,
+        tier: 2,
         cutoffs: {
-            General: { min: 800, max: 1500 },
-            EWS: { min: 700, max: 1800 },
-            OBC: { min: 1000, max: 1800 },
-            SC: { min: 1500, max: 3000 },
-            ST: { min: 1800, max: 3500 },
-            PWD: { min: 1200, max: 2500 }
+            General: { min: 300, max: 450 },
+            EWS: { min: 360, max: 540 },
+            OBC: { min: 450, max: 675 },
+            SC: { min: 600, max: 900 },
+            ST: { min: 750, max: 1125 },
+            PWD: { min: 540, max: 810 }
         },
         fees: "₹1.0 Lakhs (Total)",
         duration: "3 Years",
         seats: 45,
         highlights: ["Developing Infrastructure", "Growing Placement", "Affordable Education"]
     },
+
+    // 8. NIT Jamshedpur - Under 550 Rank
     {
         name: "NIT Jamshedpur (National Institute of Technology Jamshedpur)",
         location: "Jamshedpur, Jharkhand",
         type: "NIT",
-        tier: 3,
+        tier: 2,
         cutoffs: {
-            General: { min: 700, max: 1400 },
-            EWS: { min: 600, max: 1650 },
-            OBC: { min: 900, max: 1700 },
-            SC: { min: 1400, max: 2800 },
-            ST: { min: 1700, max: 3200 },
-            PWD: { min: 1100, max: 2300 }
+            General: { min: 350, max: 550 },
+            EWS: { min: 420, max: 660 },
+            OBC: { min: 525, max: 825 },
+            SC: { min: 700, max: 1100 },
+            ST: { min: 875, max: 1375 },
+            PWD: { min: 630, max: 990 }
         },
         fees: "₹1.1 Lakhs (Total)",
         duration: "3 Years",
         seats: 48,
         highlights: ["Steel City", "Industrial Exposure", "Hands-on Learning"]
     },
+
+    // 9. NIT Raipur - Under 650 Rank
     {
-        name: "NIT Silchar (National Institute of Technology Silchar)",
-        location: "Silchar, Assam",
+        name: "NIT Raipur (National Institute of Technology Raipur)",
+        location: "Raipur, Chhattisgarh",
+        type: "NIT",
+        tier: 2,
+        cutoffs: {
+            General: { min: 450, max: 650 },
+            EWS: { min: 540, max: 780 },
+            OBC: { min: 675, max: 975 },
+            SC: { min: 900, max: 1300 },
+            ST: { min: 1125, max: 1625 },
+            PWD: { min: 810, max: 1170 }
+        },
+        fees: "₹1.1 Lakhs (Total)",
+        duration: "3 Years",
+        seats: 48,
+        highlights: ["Emerging NIT", "Good Infrastructure", "Industry Connect"]
+    },
+
+    // 10. NIT Meghalaya - Under 800 Rank
+    {
+        name: "NIT Meghalaya (National Institute of Technology Meghalaya)",
+        location: "Shillong, Meghalaya",
         type: "NIT",
         tier: 3,
         cutoffs: {
-            General: { min: 1000, max: 2000 },
-            EWS: { min: 900, max: 2400 },
-            OBC: { min: 1200, max: 2300 },
-            SC: { min: 2000, max: 4000 },
-            ST: { min: 2300, max: 4500 },
-            PWD: { min: 1500, max: 3200 }
+            General: { min: 550, max: 800 },
+            EWS: { min: 660, max: 960 },
+            OBC: { min: 825, max: 1200 },
+            SC: { min: 1100, max: 1600 },
+            ST: { min: 1375, max: 2000 },
+            PWD: { min: 990, max: 1440 }
         },
         fees: "₹0.9 Lakhs (Total)",
         duration: "3 Years",
         seats: 42,
         highlights: ["Northeast Hub", "Scenic Location", "Lower Competition"]
     },
+
+    // 11. NIT Agartala - Under 850 Rank
     {
         name: "NIT Agartala (National Institute of Technology Agartala)",
         location: "Agartala, Tripura",
         type: "NIT",
         tier: 3,
         cutoffs: {
-            General: { min: 1200, max: 2500 },
-            EWS: { min: 1100, max: 3000 },
-            OBC: { min: 1500, max: 2800 },
-            SC: { min: 2500, max: 5000 },
-            ST: { min: 2800, max: 5500 },
-            PWD: { min: 1800, max: 4000 }
+            General: { min: 650, max: 850 },
+            EWS: { min: 780, max: 1020 },
+            OBC: { min: 975, max: 1275 },
+            SC: { min: 1300, max: 1700 },
+            ST: { min: 1625, max: 2125 },
+            PWD: { min: 1170, max: 1530 }
         },
         fees: "₹0.8 Lakhs (Total)",
         duration: "3 Years",
         seats: 36,
         highlights: ["Border State", "Cultural Diversity", "Emerging Institute"]
     },
+
+    // 12. IIIT Bhopal - Under 1100 Rank
     {
-        name: "NIT Arunachal Pradesh (National Institute of Technology Arunachal Pradesh)",
-        location: "Yupia, Arunachal Pradesh",
-        type: "NIT",
-        tier: 3,
+        name: "IIIT Bhopal (Indian Institute of Information Technology Bhopal)",
+        location: "Bhopal, Madhya Pradesh",
+        type: "IIIT",
+        tier: 2,
         cutoffs: {
-            General: { min: 1500, max: 3000 },
-            EWS: { min: 1400, max: 3600 },
-            OBC: { min: 1800, max: 3500 },
-            SC: { min: 3000, max: 6000 },
-            ST: { min: 3500, max: 7000 },
-            PWD: { min: 2200, max: 4800 }
+            General: { min: 700, max: 1100 },
+            EWS: { min: 840, max: 1320 },
+            OBC: { min: 1050, max: 1650 },
+            SC: { min: 1400, max: 2200 },
+            ST: { min: 1750, max: 2750 },
+            PWD: { min: 1260, max: 1980 }
         },
-        fees: "₹0.7 Lakhs (Total)",
+        fees: "₹3.2 Lakhs (Total)",
         duration: "3 Years",
-        seats: 30,
-        highlights: ["Mountain Campus", "Newest NIT", "Unique Experience"]
+        seats: 40,
+        highlights: ["IT Focused", "Modern Curriculum", "Industry Partnerships"]
     },
 
-    // Other Central Institutions
+    // 13. IIIT Vadodara - Under 1300 Rank
     {
-        name: "BIT Mesra (Birla Institute of Technology)",
-        location: "Ranchi, Jharkhand",
-        type: "Private Deemed University",
+        name: "IIIT Vadodara (Indian Institute of Information Technology Vadodara)",
+        location: "Vadodara, Gujarat",
+        type: "IIIT",
         tier: 2,
         cutoffs: {
-            General: { min: 500, max: 1200 },
-            EWS: { min: 450, max: 1400 },
-            OBC: { min: 600, max: 1400 },
-            SC: { min: 1000, max: 2200 },
-            ST: { min: 1200, max: 2500 },
-            PWD: { min: 800, max: 1800 }
+            General: { min: 900, max: 1300 },
+            EWS: { min: 1080, max: 1560 },
+            OBC: { min: 1350, max: 1950 },
+            SC: { min: 1800, max: 2600 },
+            ST: { min: 2250, max: 3250 },
+            PWD: { min: 1620, max: 2340 }
         },
-        fees: "₹4.5 Lakhs (Total)",
+        fees: "₹3.0 Lakhs (Total)",
         duration: "3 Years",
-        seats: 120,
-        highlights: ["Private University", "Industry Partnerships", "Multiple Campuses"]
-    },
-    {
-        name: "Thapar Institute of Engineering and Technology",
-        location: "Patiala, Punjab",
-        type: "Private Deemed University",
-        tier: 2,
-        cutoffs: {
-            General: { min: 400, max: 1000 },
-            EWS: { min: 350, max: 1200 },
-            OBC: { min: 500, max: 1200 },
-            SC: { min: 800, max: 1800 },
-            ST: { min: 1000, max: 2000 },
-            PWD: { min: 600, max: 1500 }
-        },
-        fees: "₹5.2 Lakhs (Total)",
-        duration: "3 Years",
-        seats: 80,
-        highlights: ["Strong Alumni", "International Programs", "Research Focus"]
+        seats: 35,
+        highlights: ["Gujarat Location", "Technology Focus", "Growing Reputation"]
     }
 ];
 
 
 // NIMCET rank prediction data (CORRECTED VERSION)
 const nimcetRankData = [
-    // General Category (Best ranks need highest marks)
-    { minMarks: 950, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'General' },
-    { minMarks: 900, maxMarks: 949, minRank: 11, maxRank: 50, category: 'General' },
-    { minMarks: 850, maxMarks: 899, minRank: 51, maxRank: 100, category: 'General' },
-    { minMarks: 800, maxMarks: 849, minRank: 101, maxRank: 150, category: 'General' },
-    { minMarks: 750, maxMarks: 799, minRank: 151, maxRank: 200, category: 'General' },
-    { minMarks: 700, maxMarks: 749, minRank: 201, maxRank: 250, category: 'General' },
-    { minMarks: 650, maxMarks: 699, minRank: 251, maxRank: 300, category: 'General' },
-    { minMarks: 600, maxMarks: 649, minRank: 301, maxRank: 350, category: 'General' },
-    { minMarks: 550, maxMarks: 599, minRank: 351, maxRank: 400, category: 'General' },
-    { minMarks: 500, maxMarks: 549, minRank: 401, maxRank: 450, category: 'General' },
-    { minMarks: 450, maxMarks: 499, minRank: 451, maxRank: 500, category: 'General' },
-    { minMarks: 400, maxMarks: 449, minRank: 501, maxRank: 550, category: 'General' },
-    { minMarks: 350, maxMarks: 399, minRank: 551, maxRank: 600, category: 'General' },
-    { minMarks: 300, maxMarks: 349, minRank: 601, maxRank: 650, category: 'General' },
-    { minMarks: 250, maxMarks: 299, minRank: 651, maxRank: 700, category: 'General' },
-    { minMarks: 200, maxMarks: 249, minRank: 701, maxRank: 20000, category: 'General' },
+    // General Category
+    { minMarks: 500, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'General' },
+    { minMarks: 450, maxMarks: 499, minRank: 11, maxRank: 50, category: 'General' },
+    { minMarks: 350, maxMarks: 449, minRank: 51, maxRank: 150, category: 'General' },
+    { minMarks: 300, maxMarks: 349, minRank: 151, maxRank: 300, category: 'General' },
+    { minMarks: 270, maxMarks: 299, minRank: 301, maxRank: 500, category: 'General' },
+    { minMarks: 250, maxMarks: 269, minRank: 501, maxRank: 800, category: 'General' },
+    { minMarks: 230, maxMarks: 249, minRank: 801, maxRank: 1200, category: 'General' },
+    { minMarks: 200, maxMarks: 229, minRank: 1201, maxRank: 1800, category: 'General' },
+    { minMarks: 180, maxMarks: 199, minRank: 1801, maxRank: 2500, category: 'General' },
+    { minMarks: 150, maxMarks: 179, minRank: 2501, maxRank: 3500, category: 'General' },
+    { minMarks: 120, maxMarks: 149, minRank: 3501, maxRank: 5000, category: 'General' },
+    { minMarks: 100, maxMarks: 119, minRank: 5001, maxRank: 7000, category: 'General' },
+  
+    // OBC Category
+    { minMarks: 450, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'OBC' },
+    { minMarks: 400, maxMarks: 449, minRank: 11, maxRank: 50, category: 'OBC' },
+    { minMarks: 320, maxMarks: 399, minRank: 51, maxRank: 150, category: 'OBC' },
+    { minMarks: 280, maxMarks: 319, minRank: 151, maxRank: 300, category: 'OBC' },
+    { minMarks: 250, maxMarks: 279, minRank: 301, maxRank: 500, category: 'OBC' },
+    { minMarks: 220, maxMarks: 249, minRank: 501, maxRank: 800, category: 'OBC' },
+    { minMarks: 200, maxMarks: 219, minRank: 801, maxRank: 1200, category: 'OBC' },
+    { minMarks: 190, maxMarks: 199, minRank: 1201, maxRank: 1800, category: 'OBC' },
+    { minMarks: 170, maxMarks: 189, minRank: 1801, maxRank: 2500, category: 'OBC' },
+    { minMarks: 140, maxMarks: 169, minRank: 2501, maxRank: 3500, category: 'OBC' },
+    { minMarks: 110, maxMarks: 139, minRank: 3501, maxRank: 5000, category: 'OBC' },
+    { minMarks: 90, maxMarks: 109, minRank: 5001, maxRank: 7000, category: 'OBC' },
 
-    // EWS Category (Slightly better than General)
-    { minMarks: 930, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'EWS' },
-    { minMarks: 880, maxMarks: 929, minRank: 11, maxRank: 50, category: 'EWS' },
-    { minMarks: 830, maxMarks: 879, minRank: 51, maxRank: 100, category: 'EWS' },
-    { minMarks: 780, maxMarks: 829, minRank: 101, maxRank: 150, category: 'EWS' },
-    { minMarks: 730, maxMarks: 779, minRank: 151, maxRank: 200, category: 'EWS' },
-    { minMarks: 680, maxMarks: 729, minRank: 201, maxRank: 250, category: 'EWS' },
-    { minMarks: 630, maxMarks: 679, minRank: 251, maxRank: 300, category: 'EWS' },
-    { minMarks: 580, maxMarks: 629, minRank: 301, maxRank: 350, category: 'EWS' },
-    { minMarks: 530, maxMarks: 579, minRank: 351, maxRank: 400, category: 'EWS' },
-    { minMarks: 480, maxMarks: 529, minRank: 401, maxRank: 450, category: 'EWS' },
-    { minMarks: 430, maxMarks: 479, minRank: 451, maxRank: 500, category: 'EWS' },
-    { minMarks: 380, maxMarks: 429, minRank: 501, maxRank: 550, category: 'EWS' },
-    { minMarks: 330, maxMarks: 379, minRank: 551, maxRank: 600, category: 'EWS' },
-    { minMarks: 280, maxMarks: 329, minRank: 601, maxRank: 650, category: 'EWS' },
-    { minMarks: 230, maxMarks: 279, minRank: 651, maxRank: 700, category: 'EWS' },
-    { minMarks: 180, maxMarks: 229, minRank: 701, maxRank: 20000, category: 'EWS' },
+    // EWS Category
+    { minMarks: 450, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'EWS' },
+    { minMarks: 400, maxMarks: 449, minRank: 11, maxRank: 50, category: 'EWS' },
+    { minMarks: 320, maxMarks: 399, minRank: 51, maxRank: 150, category: 'EWS' },
+    { minMarks: 280, maxMarks: 319, minRank: 151, maxRank: 300, category: 'EWS' },
+    { minMarks: 250, maxMarks: 279, minRank: 301, maxRank: 500, category: 'EWS' },
+    { minMarks: 220, maxMarks: 249, minRank: 501, maxRank: 800, category: 'EWS' },
+    { minMarks: 200, maxMarks: 219, minRank: 801, maxRank: 1200, category: 'EWS' },
+    { minMarks: 190, maxMarks: 199, minRank: 1201, maxRank: 1800, category: 'EWS' },
+    { minMarks: 170, maxMarks: 189, minRank: 1801, maxRank: 2500, category: 'EWS' },
+    { minMarks: 140, maxMarks: 169, minRank: 2501, maxRank: 3500, category: 'EWS' },
+    { minMarks: 110, maxMarks: 139, minRank: 3501, maxRank: 5000, category: 'EWS' },
+    { minMarks: 90, maxMarks: 109, minRank: 5001, maxRank: 7000, category: 'EWS' },
 
-    // OBC Category (Better cutoffs than General)
-    { minMarks: 900, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'OBC' },
-    { minMarks: 850, maxMarks: 899, minRank: 11, maxRank: 50, category: 'OBC' },
-    { minMarks: 800, maxMarks: 849, minRank: 51, maxRank: 100, category: 'OBC' },
-    { minMarks: 750, maxMarks: 799, minRank: 101, maxRank: 150, category: 'OBC' },
-    { minMarks: 700, maxMarks: 749, minRank: 151, maxRank: 200, category: 'OBC' },
-    { minMarks: 650, maxMarks: 699, minRank: 201, maxRank: 250, category: 'OBC' },
-    { minMarks: 600, maxMarks: 649, minRank: 251, maxRank: 300, category: 'OBC' },
-    { minMarks: 550, maxMarks: 599, minRank: 301, maxRank: 350, category: 'OBC' },
-    { minMarks: 500, maxMarks: 549, minRank: 351, maxRank: 400, category: 'OBC' },
-    { minMarks: 450, maxMarks: 499, minRank: 401, maxRank: 450, category: 'OBC' },
-    { minMarks: 400, maxMarks: 449, minRank: 451, maxRank: 500, category: 'OBC' },
-    { minMarks: 350, maxMarks: 399, minRank: 501, maxRank: 550, category: 'OBC' },
-    { minMarks: 300, maxMarks: 349, minRank: 551, maxRank: 600, category: 'OBC' },
-    { minMarks: 250, maxMarks: 299, minRank: 601, maxRank: 650, category: 'OBC' },
-    { minMarks: 200, maxMarks: 249, minRank: 651, maxRank: 700, category: 'OBC' },
-    { minMarks: 150, maxMarks: 199, minRank: 701, maxRank: 20000, category: 'OBC' },
+    // SC Category
+    { minMarks: 250, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'SC' },
+    { minMarks: 200, maxMarks: 249, minRank: 11, maxRank: 50, category: 'SC' },
+    { minMarks: 185, maxMarks: 199, minRank: 51, maxRank: 150, category: 'SC' },
+    { minMarks: 170, maxMarks: 184, minRank: 151, maxRank: 300, category: 'SC' },
+    { minMarks: 150, maxMarks: 169, minRank: 301, maxRank: 500, category: 'SC' },
+    { minMarks: 120, maxMarks: 149, minRank: 501, maxRank: 800, category: 'SC' },
+    { minMarks: 100, maxMarks: 119, minRank: 801, maxRank: 1200, category: 'SC' },
+    { minMarks: 90, maxMarks: 99, minRank: 1201, maxRank: 1800, category: 'SC' },
+    { minMarks: 70, maxMarks: 89, minRank: 1801, maxRank: 2500, category: 'SC' },
+    { minMarks: 40, maxMarks: 69, minRank: 2501, maxRank: 3500, category: 'SC' },
+    { minMarks: 30, maxMarks: 39, minRank: 3501, maxRank: 5000, category: 'SC' },
+    { minMarks: 20, maxMarks: 29, minRank: 5001, maxRank: 7000, category: 'SC' },
 
-    // SC Category (More relaxed cutoffs)
-    { minMarks: 850, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'SC' },
-    { minMarks: 800, maxMarks: 849, minRank: 11, maxRank: 50, category: 'SC' },
-    { minMarks: 750, maxMarks: 799, minRank: 51, maxRank: 100, category: 'SC' },
-    { minMarks: 700, maxMarks: 749, minRank: 101, maxRank: 150, category: 'SC' },
-    { minMarks: 650, maxMarks: 699, minRank: 151, maxRank: 200, category: 'SC' },
-    { minMarks: 600, maxMarks: 649, minRank: 201, maxRank: 250, category: 'SC' },
-    { minMarks: 550, maxMarks: 599, minRank: 251, maxRank: 300, category: 'SC' },
-    { minMarks: 500, maxMarks: 549, minRank: 301, maxRank: 350, category: 'SC' },
-    { minMarks: 450, maxMarks: 499, minRank: 351, maxRank: 400, category: 'SC' },
-    { minMarks: 400, maxMarks: 449, minRank: 401, maxRank: 450, category: 'SC' },
-    { minMarks: 350, maxMarks: 399, minRank: 451, maxRank: 500, category: 'SC' },
-    { minMarks: 300, maxMarks: 349, minRank: 501, maxRank: 550, category: 'SC' },
-    { minMarks: 250, maxMarks: 299, minRank: 551, maxRank: 600, category: 'SC' },
-    { minMarks: 200, maxMarks: 249, minRank: 601, maxRank: 650, category: 'SC' },
-    { minMarks: 150, maxMarks: 199, minRank: 651, maxRank: 700, category: 'SC' },
-    { minMarks: 100, maxMarks: 149, minRank: 701, maxRank: 20000, category: 'SC' },
+    // ST Category
+    { minMarks: 230, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'ST' },
+    { minMarks: 190, maxMarks: 229, minRank: 11, maxRank: 50, category: 'ST' },
+    { minMarks: 150, maxMarks: 189, minRank: 51, maxRank: 150, category: 'ST' },
+    { minMarks: 140, maxMarks: 149, minRank: 151, maxRank: 300, category: 'ST' },
+    { minMarks: 130, maxMarks: 139, minRank: 301, maxRank: 500, category: 'ST' },
+    { minMarks: 120, maxMarks: 129, minRank: 501, maxRank: 800, category: 'ST' },
+    { minMarks: 100, maxMarks: 119, minRank: 801, maxRank: 1200, category: 'ST' },
+    { minMarks: 90, maxMarks: 99, minRank: 1201, maxRank: 1800, category: 'ST' },
+    { minMarks: 70, maxMarks: 89, minRank: 1801, maxRank: 2500, category: 'ST' },
+    { minMarks: 40, maxMarks: 69, minRank: 2501, maxRank: 3500, category: 'ST' },
+    { minMarks: 30, maxMarks: 39, minRank: 3501, maxRank: 5000, category: 'ST' },
+    { minMarks: 20, maxMarks: 29, minRank: 5001, maxRank: 7000, category: 'ST' },
 
-    // ST Category (Most relaxed cutoffs)
-    { minMarks: 800, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'ST' },
-    { minMarks: 750, maxMarks: 799, minRank: 11, maxRank: 50, category: 'ST' },
-    { minMarks: 700, maxMarks: 749, minRank: 51, maxRank: 100, category: 'ST' },
-    { minMarks: 650, maxMarks: 699, minRank: 101, maxRank: 150, category: 'ST' },
-    { minMarks: 600, maxMarks: 649, minRank: 151, maxRank: 200, category: 'ST' },
-    { minMarks: 550, maxMarks: 599, minRank: 201, maxRank: 250, category: 'ST' },
-    { minMarks: 500, maxMarks: 549, minRank: 251, maxRank: 300, category: 'ST' },
-    { minMarks: 450, maxMarks: 499, minRank: 301, maxRank: 350, category: 'ST' },
-    { minMarks: 400, maxMarks: 449, minRank: 351, maxRank: 400, category: 'ST' },
-    { minMarks: 350, maxMarks: 399, minRank: 401, maxRank: 450, category: 'ST' },
-    { minMarks: 300, maxMarks: 349, minRank: 451, maxRank: 500, category: 'ST' },
-    { minMarks: 250, maxMarks: 299, minRank: 501, maxRank: 550, category: 'ST' },
-    { minMarks: 200, maxMarks: 249, minRank: 551, maxRank: 600, category: 'ST' },
-    { minMarks: 150, maxMarks: 199, minRank: 601, maxRank: 650, category: 'ST' },
-    { minMarks: 100, maxMarks: 149, minRank: 651, maxRank: 700, category: 'ST' },
-    { minMarks: 50, maxMarks: 99, minRank: 701, maxRank: 20000, category: 'ST' },
-
-    // PWD Category (Special consideration)
-    { minMarks: 750, maxMarks: 1000, minRank: 1, maxRank: 10, category: 'PWD' },
-    { minMarks: 700, maxMarks: 749, minRank: 11, maxRank: 50, category: 'PWD' },
-    { minMarks: 650, maxMarks: 699, minRank: 51, maxRank: 100, category: 'PWD' },
-    { minMarks: 600, maxMarks: 649, minRank: 101, maxRank: 150, category: 'PWD' },
-    { minMarks: 550, maxMarks: 599, minRank: 151, maxRank: 200, category: 'PWD' },
-    { minMarks: 500, maxMarks: 549, minRank: 201, maxRank: 250, category: 'PWD' },
-    { minMarks: 450, maxMarks: 499, minRank: 251, maxRank: 300, category: 'PWD' },
-    { minMarks: 400, maxMarks: 449, minRank: 301, maxRank: 350, category: 'PWD' },
-    { minMarks: 350, maxMarks: 399, minRank: 351, maxRank: 400, category: 'PWD' },
-    { minMarks: 300, maxMarks: 349, minRank: 401, maxRank: 450, category: 'PWD' },
-    { minMarks: 250, maxMarks: 299, minRank: 451, maxRank: 500, category: 'PWD' },
-    { minMarks: 200, maxMarks: 249, minRank: 501, maxRank: 550, category: 'PWD' },
-    { minMarks: 150, maxMarks: 199, minRank: 551, maxRank: 600, category: 'PWD' },
-    { minMarks: 100, maxMarks: 149, minRank: 601, maxRank: 650, category: 'PWD' },
-    { minMarks: 50, maxMarks: 99, minRank: 651, maxRank: 700, category: 'PWD' },
-    { minMarks: 25, maxMarks: 49, minRank: 701, maxRank: 20000, category: 'PWD' }
+    // PWD Category - FIXED TECHNICAL ERRORS
+    { minMarks: 370, maxMarks: 819, minRank: 1, maxRank: 10, category: 'PWD' },
+    { minMarks: 350, maxMarks: 369, minRank: 11, maxRank: 50, category: 'PWD' },
+    { minMarks: 320, maxMarks: 349, minRank: 51, maxRank: 100, category: 'PWD' },
+    { minMarks: 300, maxMarks: 319, minRank: 101, maxRank: 150, category: 'PWD' },
+    { minMarks: 280, maxMarks: 299, minRank: 151, maxRank: 200, category: 'PWD' },
+    { minMarks: 260, maxMarks: 279, minRank: 201, maxRank: 250, category: 'PWD' },
+    { minMarks: 240, maxMarks: 259, minRank: 251, maxRank: 300, category: 'PWD' },
+    { minMarks: 220, maxMarks: 239, minRank: 301, maxRank: 350, category: 'PWD' },
+    { minMarks: 200, maxMarks: 219, minRank: 351, maxRank: 400, category: 'PWD' },
+    { minMarks: 180, maxMarks: 199, minRank: 401, maxRank: 450, category: 'PWD' },
+    { minMarks: 160, maxMarks: 179, minRank: 451, maxRank: 500, category: 'PWD' },
+    { minMarks: 140, maxMarks: 159, minRank: 501, maxRank: 550, category: 'PWD' },
+    { minMarks: 120, maxMarks: 139, minRank: 551, maxRank: 600, category: 'PWD' },
+    { minMarks: 100, maxMarks: 119, minRank: 601, maxRank: 650, category: 'PWD' },
+    { minMarks: 80, maxMarks: 99, minRank: 651, maxRank: 700, category: 'PWD' },
+    { minMarks: 60, maxMarks: 79, minRank: 701, maxRank: 20000, category: 'PWD' }
 ];
 
 // Function to get eligible colleges based on rank and category
