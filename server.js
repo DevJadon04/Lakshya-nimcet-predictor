@@ -71,9 +71,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-/// NIMCET Colleges Data with Cutoff Ranks
-// NIMCET Colleges Data with Cutoff Ranks (Updated with EWS)
-// NIMCET Colleges Data - 13 Colleges as per Customer Requirements
+// NIMCET Colleges Data - 13 Colleges with Real Seats & Fees
 const nimcetColleges = [
     // 1. NIT Trichy - Under 100 Rank
     {
@@ -89,9 +87,9 @@ const nimcetColleges = [
             ST: { min: 1, max: 250 },
             PWD: { min: 1, max: 180 }
         },
-        fees: "₹1.5 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 60,
+        seats: 115, // From seat matrix document
         highlights: ["Top NIT for MCA", "Excellent Placement Record", "Industry Partnerships"]
     },
 
@@ -109,9 +107,9 @@ const nimcetColleges = [
             ST: { min: 1, max: 300 },
             PWD: { min: 1, max: 220 }
         },
-        fees: "₹1.6 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 54,
+        seats: 10, // From seat matrix document
         highlights: ["Capital Location", "Top Industry Exposure", "Metro Connectivity"]
     },
 
@@ -129,9 +127,9 @@ const nimcetColleges = [
             ST: { min: 1, max: 500 },
             PWD: { min: 1, max: 360 }
         },
-        fees: "₹1.4 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 60,
+        seats: 58, // From seat matrix document
         highlights: ["Research Excellence", "Strong Alumni Network", "Tech Giants Recruitment"]
     },
 
@@ -149,9 +147,9 @@ const nimcetColleges = [
             ST: { min: 300, max: 625 },
             PWD: { min: 200, max: 450 }
         },
-        fees: "₹1.3 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 60,
+        seats: 116, // From seat matrix document
         highlights: ["Historic Institution", "Strong Faculty", "Good Placement Support"]
     },
 
@@ -169,9 +167,9 @@ const nimcetColleges = [
             ST: { min: 500, max: 875 },
             PWD: { min: 350, max: 630 }
         },
-        fees: "₹1.2 Lakhs (Total)",
+        fees: "₹2.77 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 54,
+        seats: 115, // From seat matrix document
         highlights: ["Central Location", "Growing Reputation", "Affordable Fees"]
     },
 
@@ -189,15 +187,15 @@ const nimcetColleges = [
             ST: { min: 625, max: 1000 },
             PWD: { min: 450, max: 720 }
         },
-        fees: "₹1.4 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 54,
+        seats: 64, // From seat matrix document
         highlights: ["NCR Proximity", "Good Connectivity", "Emerging Programs"]
     },
 
     // 7. NIT Patna - Under 450 Rank
     {
-        name: "NIT Patna (National Institute of Technology Patna)",
+        name: "NIT Patna (National Institute of Technology Patna) - Data Sciences & Informatics",
         location: "Patna, Bihar",
         type: "NIT",
         tier: 2,
@@ -209,10 +207,10 @@ const nimcetColleges = [
             ST: { min: 750, max: 1125 },
             PWD: { min: 540, max: 810 }
         },
-        fees: "₹1.0 Lakhs (Total)",
+        fees: "₹3.00 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 45,
-        highlights: ["Developing Infrastructure", "Growing Placement", "Affordable Education"]
+        seats: 40, // From seat matrix document
+        highlights: ["Data Sciences Focus", "Growing Placement", "Specialized Program"]
     },
 
     // 8. NIT Jamshedpur - Under 550 Rank
@@ -229,9 +227,9 @@ const nimcetColleges = [
             ST: { min: 875, max: 1375 },
             PWD: { min: 630, max: 990 }
         },
-        fees: "₹1.1 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 48,
+        seats: 115, // From seat matrix document
         highlights: ["Steel City", "Industrial Exposure", "Hands-on Learning"]
     },
 
@@ -249,9 +247,9 @@ const nimcetColleges = [
             ST: { min: 1125, max: 1625 },
             PWD: { min: 810, max: 1170 }
         },
-        fees: "₹1.1 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 48,
+        seats: 110, // From seat matrix document
         highlights: ["Emerging NIT", "Good Infrastructure", "Industry Connect"]
     },
 
@@ -269,9 +267,9 @@ const nimcetColleges = [
             ST: { min: 1375, max: 2000 },
             PWD: { min: 990, max: 1440 }
         },
-        fees: "₹0.9 Lakhs (Total)",
+        fees: "₹2.10 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 42,
+        seats: 20, // From seat matrix document
         highlights: ["Northeast Hub", "Scenic Location", "Lower Competition"]
     },
 
@@ -289,9 +287,9 @@ const nimcetColleges = [
             ST: { min: 1625, max: 2125 },
             PWD: { min: 1170, max: 1530 }
         },
-        fees: "₹0.8 Lakhs (Total)",
+        fees: "₹2.54 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 36,
+        seats: 60, // From seat matrix document
         highlights: ["Border State", "Cultural Diversity", "Emerging Institute"]
     },
 
@@ -309,9 +307,9 @@ const nimcetColleges = [
             ST: { min: 1750, max: 2750 },
             PWD: { min: 1260, max: 1980 }
         },
-        fees: "₹3.2 Lakhs (Total)",
+        fees: "₹6.93 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 40,
+        seats: 75, // From seat matrix document
         highlights: ["IT Focused", "Modern Curriculum", "Industry Partnerships"]
     },
 
@@ -329,9 +327,9 @@ const nimcetColleges = [
             ST: { min: 2250, max: 3250 },
             PWD: { min: 1620, max: 2340 }
         },
-        fees: "₹3.0 Lakhs (Total)",
+        fees: "₹7.50 Lakhs (Total Program)",
         duration: "3 Years",
-        seats: 35,
+        seats: 120, // From seat matrix document (Gandhinagar Campus)
         highlights: ["Gujarat Location", "Technology Focus", "Growing Reputation"]
     }
 ];
@@ -428,7 +426,7 @@ const nimcetRankData = [
     { minMarks: 60, maxMarks: 79, minRank: 701, maxRank: 20000, category: 'PWD' }
 ];
 
-// Function to get eligible colleges based on rank and category
+// Function to get eligible colleges based on rank and category (UPDATED - 80% minimum chance)
 const getEligibleColleges = (minRank, maxRank, category) => {
     const eligibleColleges = [];
     
@@ -438,12 +436,17 @@ const getEligibleColleges = (minRank, maxRank, category) => {
             // Check if user's rank range overlaps with college cutoff
             if (minRank <= cutoff.max && maxRank >= cutoff.min) {
                 const chance = calculateChance(minRank, maxRank, cutoff.min, cutoff.max);
-                eligibleColleges.push({
-                    ...college,
-                    chance,
-                    cutoffRange: `${cutoff.min} - ${cutoff.max}`,
-                    userRank: `${minRank} - ${maxRank}`
-                });
+                
+                // 🎯 ONLY SHOW COLLEGES WITH 80% OR HIGHER CHANCE
+                if (chance >= 80) {
+                    eligibleColleges.push({
+                        ...college,
+                        chance,
+                        cutoffRange: `${cutoff.min} - ${cutoff.max}`,
+                        userRank: `${minRank} - ${maxRank}`,
+                        chanceText: `${chance}% chance of admission`
+                    });
+                }
             }
         }
     });
