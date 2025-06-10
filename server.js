@@ -882,7 +882,7 @@ app.post('/api/logout', async (req, res) => {
 
 // Add this after your existing routes (around line 800)
 
-// Export data to Excel endpoint
+// CORRECTED Export data to Excel endpoint
 app.get('/api/admin/export-excel', async (req, res) => {
     try {
         const { adminKey, collection } = req.query;
@@ -896,25 +896,25 @@ app.get('/api/admin/export-excel', async (req, res) => {
         let filename;
         
         if (collection === 'users' || !collection) {
-            // Export Users Data
+            // Export Users Data - FIXED PHONE NUMBER FORMAT
             const users = await User.find().select('-otp -otpExpiry -sessionToken');
             data = users.map(user => ({
                 'Full Name': user.fullName,
-                'Phone Number': user.phoneNumber,
+                'Phone Number': `'${user.phoneNumber}`, // Add apostrophe to force text format
                 'Verified': user.isVerified ? 'Yes' : 'No',
                 'Member Since': user.createdAt.toISOString().split('T')[0],
                 'Last Login': user.lastLoginAt ? user.lastLoginAt.toISOString().split('T')[0] : 'Never',
-                'Total Predictions': 0 // Will be calculated
+                'Total Predictions': 0
             }));
             filename = 'nimcet_users_data.csv';
         }
         
         if (collection === 'predictions' || !collection) {
-            // Export Predictions Data
+            // Export Predictions Data - FIXED PHONE NUMBER FORMAT
             const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber');
             data = predictions.map(pred => ({
                 'Student Name': pred.userDetails.fullName,
-                'Phone Number': pred.userDetails.phoneNumber,
+                'Phone Number': `'${pred.userDetails.phoneNumber}`, // Add apostrophe to force text format
                 'Marks': pred.marks,
                 'Category': pred.category,
                 'Predicted Min Rank': pred.predictedMinRank,
@@ -928,12 +928,21 @@ app.get('/api/admin/export-excel', async (req, res) => {
             filename = 'nimcet_predictions_data.csv';
         }
         
-        // Convert to CSV format
+        // Convert to CSV format with proper escaping
         if (data && data.length > 0) {
             const headers = Object.keys(data[0]);
             const csvContent = [
                 headers.join(','),
-                ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+                ...data.map(row => headers.map(header => {
+                    let value = row[header] || '';
+                    // Ensure phone numbers stay as text
+                    if (header === 'Phone Number') {
+                        value = `"'${value.replace(/'/g, '')}"`;
+                    } else {
+                        value = `"${value}"`;
+                    }
+                    return value;
+                }).join(','))
             ].join('\n');
             
             res.setHeader('Content-Type', 'text/csv');
@@ -949,7 +958,7 @@ app.get('/api/admin/export-excel', async (req, res) => {
     }
 });
 
-// Export combined data
+// CORRECTED Export combined data
 app.get('/api/admin/export-all', async (req, res) => {
     try {
         const { adminKey } = req.query;
@@ -961,10 +970,10 @@ app.get('/api/admin/export-all', async (req, res) => {
         const users = await User.find().select('-otp -otpExpiry -sessionToken');
         const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber');
         
-        // Combine data with user details and their predictions
+        // Combine data with FIXED phone number formatting
         const combinedData = predictions.map(pred => ({
             'Student Name': pred.userDetails.fullName,
-            'Phone Number': pred.userDetails.phoneNumber,
+            'Phone Number': `'${pred.userDetails.phoneNumber}`, // Fixed format
             'Marks': pred.marks,
             'Category': pred.category,
             'Predicted Min Rank': pred.predictedMinRank,
@@ -978,10 +987,20 @@ app.get('/api/admin/export-all', async (req, res) => {
             'Prediction Time': pred.createdAt.toISOString().split('T')[1].split('.')[0]
         }));
         
+        // Improved CSV generation with proper phone number handling
         const headers = Object.keys(combinedData[0]);
         const csvContent = [
             headers.join(','),
-            ...combinedData.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+            ...combinedData.map(row => headers.map(header => {
+                let value = row[header] || '';
+                // Special handling for phone numbers
+                if (header === 'Phone Number') {
+                    value = `"'${value.replace(/'/g, '')}"`;
+                } else {
+                    value = `"${value}"`;
+                }
+                return value;
+            }).join(','))
         ].join('\n');
         
         res.setHeader('Content-Type', 'text/csv');
