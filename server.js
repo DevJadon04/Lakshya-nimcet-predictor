@@ -880,6 +880,120 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
+// Add this after your existing routes (around line 800)
+
+// Export data to Excel endpoint
+app.get('/api/admin/export-excel', async (req, res) => {
+    try {
+        const { adminKey, collection } = req.query;
+        
+        // Admin authentication
+        if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        let data;
+        let filename;
+        
+        if (collection === 'users' || !collection) {
+            // Export Users Data
+            const users = await User.find().select('-otp -otpExpiry -sessionToken');
+            data = users.map(user => ({
+                'Full Name': user.fullName,
+                'Phone Number': user.phoneNumber,
+                'Verified': user.isVerified ? 'Yes' : 'No',
+                'Member Since': user.createdAt.toISOString().split('T')[0],
+                'Last Login': user.lastLoginAt ? user.lastLoginAt.toISOString().split('T')[0] : 'Never',
+                'Total Predictions': 0 // Will be calculated
+            }));
+            filename = 'nimcet_users_data.csv';
+        }
+        
+        if (collection === 'predictions' || !collection) {
+            // Export Predictions Data
+            const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber');
+            data = predictions.map(pred => ({
+                'Student Name': pred.userDetails.fullName,
+                'Phone Number': pred.userDetails.phoneNumber,
+                'Marks': pred.marks,
+                'Category': pred.category,
+                'Predicted Min Rank': pred.predictedMinRank,
+                'Predicted Max Rank': pred.predictedMaxRank,
+                'Eligible Colleges': pred.eligibleColleges,
+                'Percentage': pred.additionalInfo.percentage,
+                'Percentile': pred.additionalInfo.percentile,
+                'Prediction Date': pred.createdAt.toISOString().split('T')[0],
+                'Prediction Time': pred.createdAt.toISOString().split('T')[1].split('.')[0]
+            }));
+            filename = 'nimcet_predictions_data.csv';
+        }
+        
+        // Convert to CSV format
+        if (data && data.length > 0) {
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+            ].join('\n');
+            
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.send(csvContent);
+        } else {
+            res.json({ success: false, message: 'No data found' });
+        }
+        
+    } catch (error) {
+        console.error('Export Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to export data' });
+    }
+});
+
+// Export combined data
+app.get('/api/admin/export-all', async (req, res) => {
+    try {
+        const { adminKey } = req.query;
+        
+        if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        const users = await User.find().select('-otp -otpExpiry -sessionToken');
+        const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber');
+        
+        // Combine data with user details and their predictions
+        const combinedData = predictions.map(pred => ({
+            'Student Name': pred.userDetails.fullName,
+            'Phone Number': pred.userDetails.phoneNumber,
+            'Marks': pred.marks,
+            'Category': pred.category,
+            'Predicted Min Rank': pred.predictedMinRank,
+            'Predicted Max Rank': pred.predictedMaxRank,
+            'Rank Range': `${pred.predictedMinRank} - ${pred.predictedMaxRank}`,
+            'Eligible Colleges': pred.eligibleColleges,
+            'Percentage': pred.additionalInfo.percentage + '%',
+            'Percentile': pred.additionalInfo.percentile + '%',
+            'Member Since': pred.userId.createdAt.toISOString().split('T')[0],
+            'Prediction Date': pred.createdAt.toISOString().split('T')[0],
+            'Prediction Time': pred.createdAt.toISOString().split('T')[1].split('.')[0]
+        }));
+        
+        const headers = Object.keys(combinedData[0]);
+        const csvContent = [
+            headers.join(','),
+            ...combinedData.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+        ].join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="nimcet_complete_data.csv"');
+        res.send(csvContent);
+        
+    } catch (error) {
+        console.error('Export All Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to export complete data' });
+    }
+});
+
 // Health check endpoint (Updated for MongoDB)
 app.get('/health', async (req, res) => {
     try {
