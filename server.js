@@ -882,7 +882,7 @@ app.post('/api/logout', async (req, res) => {
 
 // Add this after your existing routes (around line 800)
 
-// CORRECTED Export data to Excel endpoint
+// FIXED Export data to Excel endpoint with proper error handling
 app.get('/api/admin/export-excel', async (req, res) => {
     try {
         const { adminKey, collection } = req.query;
@@ -896,13 +896,13 @@ app.get('/api/admin/export-excel', async (req, res) => {
         let filename;
         
         if (collection === 'users' || !collection) {
-            // Export Users Data - FIXED PHONE NUMBER FORMAT
+            // Export Users Data - SAFE VERSION
             const users = await User.find().select('-otp -otpExpiry -sessionToken');
             data = users.map(user => ({
-                'Full Name': user.fullName,
-                'Phone Number': `'${user.phoneNumber}`, // Add apostrophe to force text format
+                'Full Name': user.fullName || 'N/A',
+                'Phone Number': `'${user.phoneNumber || 'N/A'}`,
                 'Verified': user.isVerified ? 'Yes' : 'No',
-                'Member Since': user.createdAt.toISOString().split('T')[0],
+                'Member Since': user.createdAt ? user.createdAt.toISOString().split('T')[0] : 'N/A',
                 'Last Login': user.lastLoginAt ? user.lastLoginAt.toISOString().split('T')[0] : 'Never',
                 'Total Predictions': 0
             }));
@@ -910,20 +910,20 @@ app.get('/api/admin/export-excel', async (req, res) => {
         }
         
         if (collection === 'predictions' || !collection) {
-            // Export Predictions Data - FIXED PHONE NUMBER FORMAT
-            const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber');
+            // Export Predictions Data - SAFE VERSION
+            const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber createdAt');
             data = predictions.map(pred => ({
-                'Student Name': pred.userDetails.fullName,
-                'Phone Number': `'${pred.userDetails.phoneNumber}`, // Add apostrophe to force text format
-                'Marks': pred.marks,
-                'Category': pred.category,
-                'Predicted Min Rank': pred.predictedMinRank,
-                'Predicted Max Rank': pred.predictedMaxRank,
-                'Eligible Colleges': pred.eligibleColleges,
-                'Percentage': pred.additionalInfo.percentage,
-                'Percentile': pred.additionalInfo.percentile,
-                'Prediction Date': pred.createdAt.toISOString().split('T')[0],
-                'Prediction Time': pred.createdAt.toISOString().split('T')[1].split('.')[0]
+                'Student Name': pred.userDetails?.fullName || 'N/A',
+                'Phone Number': `'${pred.userDetails?.phoneNumber || 'N/A'}`,
+                'Marks': pred.marks || 0,
+                'Category': pred.category || 'N/A',
+                'Predicted Min Rank': pred.predictedMinRank || 0,
+                'Predicted Max Rank': pred.predictedMaxRank || 0,
+                'Eligible Colleges': pred.eligibleColleges || 0,
+                'Percentage': pred.additionalInfo?.percentage || 0,
+                'Percentile': pred.additionalInfo?.percentile || 0,
+                'Prediction Date': pred.createdAt ? pred.createdAt.toISOString().split('T')[0] : 'N/A',
+                'Prediction Time': pred.createdAt ? pred.createdAt.toISOString().split('T')[1].split('.')[0] : 'N/A'
             }));
             filename = 'nimcet_predictions_data.csv';
         }
@@ -935,7 +935,6 @@ app.get('/api/admin/export-excel', async (req, res) => {
                 headers.join(','),
                 ...data.map(row => headers.map(header => {
                     let value = row[header] || '';
-                    // Ensure phone numbers stay as text
                     if (header === 'Phone Number') {
                         value = `"'${value.replace(/'/g, '')}"`;
                     } else {
@@ -958,7 +957,7 @@ app.get('/api/admin/export-excel', async (req, res) => {
     }
 });
 
-// CORRECTED Export combined data
+// FIXED Export combined data with proper null checks
 app.get('/api/admin/export-all', async (req, res) => {
     try {
         const { adminKey } = req.query;
@@ -968,32 +967,36 @@ app.get('/api/admin/export-all', async (req, res) => {
         }
         
         const users = await User.find().select('-otp -otpExpiry -sessionToken');
-        const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber');
+        const predictions = await Prediction.find().populate('userId', 'fullName phoneNumber createdAt');
         
-        // Combine data with FIXED phone number formatting
+        // SAFE data mapping with null checks
         const combinedData = predictions.map(pred => ({
-            'Student Name': pred.userDetails.fullName,
-            'Phone Number': `'${pred.userDetails.phoneNumber}`, // Fixed format
-            'Marks': pred.marks,
-            'Category': pred.category,
-            'Predicted Min Rank': pred.predictedMinRank,
-            'Predicted Max Rank': pred.predictedMaxRank,
-            'Rank Range': `${pred.predictedMinRank} - ${pred.predictedMaxRank}`,
-            'Eligible Colleges': pred.eligibleColleges,
-            'Percentage': pred.additionalInfo.percentage + '%',
-            'Percentile': pred.additionalInfo.percentile + '%',
-            'Member Since': pred.userId.createdAt.toISOString().split('T')[0],
-            'Prediction Date': pred.createdAt.toISOString().split('T')[0],
-            'Prediction Time': pred.createdAt.toISOString().split('T')[1].split('.')[0]
+            'Student Name': pred.userDetails?.fullName || 'N/A',
+            'Phone Number': `'${pred.userDetails?.phoneNumber || 'N/A'}`,
+            'Marks': pred.marks || 0,
+            'Category': pred.category || 'N/A',
+            'Predicted Min Rank': pred.predictedMinRank || 0,
+            'Predicted Max Rank': pred.predictedMaxRank || 0,
+            'Rank Range': `${pred.predictedMinRank || 0} - ${pred.predictedMaxRank || 0}`,
+            'Eligible Colleges': pred.eligibleColleges || 0,
+            'Percentage': (pred.additionalInfo?.percentage || 0) + '%',
+            'Percentile': (pred.additionalInfo?.percentile || 0) + '%',
+            'Member Since': (pred.userId && pred.userId.createdAt) ? pred.userId.createdAt.toISOString().split('T')[0] : 'N/A',
+            'Prediction Date': pred.createdAt ? pred.createdAt.toISOString().split('T')[0] : 'N/A',
+            'Prediction Time': pred.createdAt ? pred.createdAt.toISOString().split('T')[1].split('.')[0] : 'N/A'
         }));
         
-        // Improved CSV generation with proper phone number handling
+        // Check if we have data
+        if (combinedData.length === 0) {
+            return res.json({ success: false, message: 'No predictions found in database' });
+        }
+        
+        // Safe CSV generation
         const headers = Object.keys(combinedData[0]);
         const csvContent = [
             headers.join(','),
             ...combinedData.map(row => headers.map(header => {
                 let value = row[header] || '';
-                // Special handling for phone numbers
                 if (header === 'Phone Number') {
                     value = `"'${value.replace(/'/g, '')}"`;
                 } else {
@@ -1009,7 +1012,12 @@ app.get('/api/admin/export-all', async (req, res) => {
         
     } catch (error) {
         console.error('Export All Error:', error);
-        res.status(500).json({ success: false, error: 'Failed to export complete data' });
+        console.error('Error stack:', error.stack);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to export complete data',
+            details: error.message 
+        });
     }
 });
 
