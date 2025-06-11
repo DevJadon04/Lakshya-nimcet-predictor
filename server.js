@@ -683,8 +683,8 @@ app.post('/api/predict-rank', async (req, res) => {
         
         // 🚨 CHECK PREDICTION LIMIT (NEW FEATURE)
         // 🆕 UPDATED: CHECK PREDICTION LIMIT (CONFIGURABLE)
-                const PREDICTION_LIMIT = PREDICTION_CONFIG.LIMIT_PER_PHONE;
-                const existingPredictions = await Prediction.countDocuments({ userId: user._id });
+            const PREDICTION_LIMIT = PREDICTION_CONFIG.LIMIT_PER_PHONE;
+            const existingPredictions = await Prediction.countDocuments({ userId: user._id });
 
 
                 if (!hasUnlimitedAccess(user.phoneNumber) && existingPredictions >=       PREDICTION_LIMIT) {
