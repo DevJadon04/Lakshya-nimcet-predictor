@@ -501,8 +501,55 @@ const calculateChance = (userMinRank, userMaxRank, collegeMinRank, collegeMaxRan
 };
 
 // Routes
-
-// Send OTP Route (Updated for MongoDB)
+// NEW: Check Prediction Limit Before OTP Request
+app.post('/api/check-limit', async (req, res) => {
+    try {
+        const { phoneNumber } = req.body;
+        
+        if (!phoneNumber || phoneNumber.length !== 10) {
+            return res.status(400).json({ success: false, message: 'Valid phone number required' });
+        }
+        
+        const user = await User.findOne({ phoneNumber });
+        
+        if (!user) {
+            return res.json({
+                success: true,
+                canRequestOtp: true,
+                message: 'New user - can request OTP',
+                predictionsUsed: 0,
+                predictionsRemaining: PREDICTION_CONFIG.LIMIT_PER_PHONE
+            });
+        }
+        
+        if (hasUnlimitedAccess(phoneNumber)) {
+            return res.json({
+                success: true,
+                canRequestOtp: true,
+                message: 'Admin/Premium user - unlimited access',
+                predictionsUsed: 'N/A',
+                predictionsRemaining: 'Unlimited'
+            });
+        }
+        
+        const predictions = await Prediction.countDocuments({ userId: user._id });
+        const canRequest = predictions < PREDICTION_CONFIG.LIMIT_PER_PHONE;
+        
+        res.json({
+            success: true,
+            canRequestOtp: canRequest,
+            message: canRequest ? 'Can request OTP' : 'Prediction limit reached',
+            predictionsUsed: predictions,
+            predictionsRemaining: Math.max(0, PREDICTION_CONFIG.LIMIT_PER_PHONE - predictions),
+            phoneNumber: phoneNumber
+        });
+        
+    } catch (error) {
+        console.error('Check Limit Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to check limit' });
+    }
+});
+// ENHANCED: Send OTP Route with Prediction Limit Check
 app.post('/api/send-otp', async (req, res) => {
     try {
         const { phoneNumber } = req.body;
@@ -522,11 +569,45 @@ app.post('/api/send-otp', async (req, res) => {
             });
         }
         
+        // 🚨 NEW: Check if user has reached prediction limit BEFORE sending OTP
+        const existingUser = await User.findOne({ phoneNumber });
+        
+        if (existingUser && !hasUnlimitedAccess(phoneNumber)) {
+            const existingPredictions = await Prediction.countDocuments({ userId: existingUser._id });
+            const PREDICTION_LIMIT = PREDICTION_CONFIG.LIMIT_PER_PHONE;
+            
+            console.log(`🔍 OTP Request Check - Phone: ${phoneNumber}, Predictions: ${existingPredictions}/${PREDICTION_LIMIT}`);
+            
+            if (existingPredictions >= PREDICTION_LIMIT) {
+                console.log(`🚫 BLOCKING OTP REQUEST - Limit reached for ${phoneNumber}`);
+                
+                return res.status(429).json({
+                    success: false,
+                    message: `This number has reached the prediction limit (${PREDICTION_LIMIT}/${PREDICTION_LIMIT} used).`,
+                    errorType: 'LIMIT_REACHED_NO_OTP',
+                    details: {
+                        predictionsUsed: existingPredictions,
+                        predictionsAllowed: PREDICTION_LIMIT,
+                        phoneNumber: phoneNumber,
+                        suggestions: [
+                            'Use a different phone number to get predictions',
+                            'Contact admin to reset your limit',
+                            'Each phone number gets 3 free predictions'
+                        ]
+                    },
+                    blockReason: 'PREDICTION_LIMIT_REACHED',
+                    canRequestOtp: false
+                });
+            }
+        }
+        
+        console.log(`✅ OTP REQUEST ALLOWED for ${phoneNumber} - Predictions: ${existingUser ? await Prediction.countDocuments({ userId: existingUser._id }) : 0}/${PREDICTION_CONFIG.LIMIT_PER_PHONE}`);
+        
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
         
         // Find or create user
-        let user = await User.findOne({ phoneNumber });
+        let user = existingUser;
         
         if (user) {
             // Update existing user
@@ -550,13 +631,16 @@ app.post('/api/send-otp', async (req, res) => {
         const smsMessage = `Your NIMCET Rank Predictor OTP is: ${otp}. Valid for 10 minutes. Do not share with anyone.`;
         const smsResult = await sendSMS(phoneNumber, smsMessage);
         
+        console.log(`📱 OTP SENT to ${phoneNumber} - Method: ${smsResult.method}`);
+        
         res.json({
             success: true,
             message: smsResult.method === 'twilio' 
                 ? 'OTP sent to your mobile number' 
                 : 'OTP generated successfully',
             requiresName: !user.fullName || user.fullName === 'Pending',
-            expiresIn: '10 minutes'
+            expiresIn: '10 minutes',
+            remainingPredictions: hasUnlimitedAccess(phoneNumber) ? 'Unlimited' : Math.max(0, PREDICTION_CONFIG.LIMIT_PER_PHONE - (existingUser ? await Prediction.countDocuments({ userId: existingUser._id }) : 0))
         });
         
     } catch (error) {
@@ -1152,13 +1236,13 @@ app.get('/api/admin/export-all', async (req, res) => {
     }
 });
 
-// FIXED: Admin endpoint to reset user prediction limit (GET + POST)
+/// ENHANCED: Admin Reset Limit (GET method for browser)
 app.get('/api/admin/reset-limit', async (req, res) => {
     try {
-        const { adminKey, phoneNumber } = req.query; // GET uses query params
+        const { adminKey, phoneNumber } = req.query;
         
         if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
-            return res.status(401).json({ success: false, message: 'Unauthorized' });
+            return res.status(401).json({ success: false, message: 'Unauthorized - Invalid admin key' });
         }
         
         if (!phoneNumber) {
@@ -1167,33 +1251,52 @@ app.get('/api/admin/reset-limit', async (req, res) => {
         
         const user = await User.findOne({ phoneNumber });
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: `User with phone ${phoneNumber} not found` });
         }
         
+        // Get current prediction count
+        const currentPredictions = await Prediction.countDocuments({ userId: user._id });
+        
         // Delete all predictions for this user (reset limit)
-        const deletedCount = await Prediction.deleteMany({ userId: user._id });
+        const deletedResult = await Prediction.deleteMany({ userId: user._id });
+        
+        // Clear any existing session to force fresh login
+        user.sessionToken = null;
+        user.otp = null;
+        user.otpExpiry = null;
+        user.isVerified = false;
+        await user.save();
+        
+        console.log(`🔄 ADMIN RESET - Phone: ${phoneNumber}, Deleted: ${deletedResult.deletedCount} predictions`);
         
         res.json({
             success: true,
-            message: `Prediction limit reset for ${phoneNumber}`,
-            deletedPredictions: deletedCount.deletedCount,
-            user: user.fullName,
-            method: 'GET'
+            message: `✅ Prediction limit reset successfully for ${phoneNumber}`,
+            details: {
+                phoneNumber: phoneNumber,
+                userName: user.fullName,
+                deletedPredictions: deletedResult.deletedCount,
+                previousLimit: currentPredictions,
+                newLimit: 0,
+                canRequestOtp: true,
+                resetBy: 'Admin',
+                resetTime: new Date().toISOString()
+            }
         });
         
     } catch (error) {
-        console.error('Reset Limit Error (GET):', error);
-        res.status(500).json({ success: false, error: 'Failed to reset limit' });
+        console.error('Admin Reset Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to reset limit', details: error.message });
     }
 });
 
-// Keep the existing POST method too
+// ENHANCED: Admin Reset Limit (POST method for API calls)
 app.post('/api/admin/reset-limit', async (req, res) => {
     try {
-        const { adminKey, phoneNumber } = req.body; // POST uses body
+        const { adminKey, phoneNumber } = req.body;
         
         if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
-            return res.status(401).json({ success: false, message: 'Unauthorized' });
+            return res.status(401).json({ success: false, message: 'Unauthorized - Invalid admin key' });
         }
         
         if (!phoneNumber) {
@@ -1202,26 +1305,44 @@ app.post('/api/admin/reset-limit', async (req, res) => {
         
         const user = await User.findOne({ phoneNumber });
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: `User with phone ${phoneNumber} not found` });
         }
         
+        // Get current prediction count
+        const currentPredictions = await Prediction.countDocuments({ userId: user._id });
+        
         // Delete all predictions for this user (reset limit)
-        const deletedCount = await Prediction.deleteMany({ userId: user._id });
+        const deletedResult = await Prediction.deleteMany({ userId: user._id });
+        
+        // Clear any existing session to force fresh login
+        user.sessionToken = null;
+        user.otp = null;
+        user.otpExpiry = null;
+        user.isVerified = false;
+        await user.save();
+        
+        console.log(`🔄 ADMIN RESET (POST) - Phone: ${phoneNumber}, Deleted: ${deletedResult.deletedCount} predictions`);
         
         res.json({
             success: true,
-            message: `Prediction limit reset for ${phoneNumber}`,
-            deletedPredictions: deletedCount.deletedCount,
-            user: user.fullName,
-            method: 'POST'
+            message: `✅ Prediction limit reset successfully for ${phoneNumber}`,
+            details: {
+                phoneNumber: phoneNumber,
+                userName: user.fullName,
+                deletedPredictions: deletedResult.deletedCount,
+                previousLimit: currentPredictions,
+                newLimit: 0,
+                canRequestOtp: true,
+                resetBy: 'Admin',
+                resetTime: new Date().toISOString()
+            }
         });
         
     } catch (error) {
-        console.error('Reset Limit Error (POST):', error);
-        res.status(500).json({ success: false, error: 'Failed to reset limit' });
+        console.error('Admin Reset Error (POST):', error);
+        res.status(500).json({ success: false, error: 'Failed to reset limit', details: error.message });
     }
 });
-
 // Health check endpoint (Updated for MongoDB)
 app.get('/health', async (req, res) => {
     try {
