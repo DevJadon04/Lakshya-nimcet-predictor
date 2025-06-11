@@ -63,12 +63,51 @@ console.log('🔧 Configuration Status:');
 console.log('- MongoDB:', mongoose.connection.readyState === 1 ? '✅ Connected' : '⏳ Connecting...');
 console.log('- Twilio SMS:', SMS_ENABLED ? '✅ Enabled' : '❌ Disabled');
 
-// SMS Function
-const sendSMS = async (phoneNumber, message) => {
+// ENHANCED SMS Function with MSG91 (Cheap) + Twilio (Backup)
+const axios = require('axios');
+
+// MSG91 SMS Function (Primary - Cheap)
+const sendSMS_MSG91 = async (phoneNumber, otp) => {
     try {
-        if (!SMS_ENABLED) {
-            console.log(`📱 SMS DISABLED - Would send to ${phoneNumber}: ${message}`);
-            return { success: true, method: 'console' };
+        console.log(`📱 Attempting MSG91 SMS to ${phoneNumber} with OTP: ${otp}`);
+        
+        const response = await axios.post('https://control.msg91.com/api/v5/otp', {
+            template_id: process.env.MSG91_TEMPLATE_ID,
+            mobile: `91${phoneNumber}`, // Add country code
+            authkey: process.env.MSG91_AUTH_KEY,
+            otp: otp,
+            otp_expiry: 10 // 10 minutes
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`✅ MSG91 SMS sent successfully - Response:`, response.data);
+        return { 
+            success: true, 
+            provider: 'MSG91', 
+            cost: '₹0.20',
+            response: response.data,
+            method: 'msg91'
+        };
+        
+    } catch (error) {
+        console.error(`❌ MSG91 SMS failed for ${phoneNumber}:`, error.response?.data || error.message);
+        return { 
+            success: false, 
+            provider: 'MSG91', 
+            error: error.response?.data || error.message 
+        };
+    }
+};
+
+// Twilio SMS Function (Backup - Expensive)
+const sendSMS_Twilio = async (phoneNumber, message) => {
+    try {
+        if (!SMS_ENABLED || !twilioClient) {
+            console.log(`📱 Twilio DISABLED - Would send to ${phoneNumber}: ${message}`);
+            return { success: true, method: 'console', provider: 'Twilio-Disabled' };
         }
 
         const result = await twilioClient.messages.create({
@@ -77,16 +116,77 @@ const sendSMS = async (phoneNumber, message) => {
             to: `+91${phoneNumber}`
         });
 
-        console.log(`✅ SMS sent successfully to ${phoneNumber} - SID: ${result.sid}`);
-        return { success: true, sid: result.sid, method: 'twilio' };
+        console.log(`✅ Twilio SMS sent successfully - SID: ${result.sid}`);
+        return { 
+            success: true, 
+            provider: 'Twilio', 
+            cost: '₹7.11',
+            sid: result.sid, 
+            method: 'twilio' 
+        };
         
     } catch (error) {
-        console.error(`❌ SMS failed for ${phoneNumber}:`, error.message);
-        console.log(`📱 FALLBACK - OTP for ${phoneNumber}: ${message.split(': ')[1].split('.')[0]}`);
-        return { success: false, error: error.message, method: 'fallback' };
+        console.error(`❌ Twilio SMS failed for ${phoneNumber}:`, error.message);
+        return { 
+            success: false, 
+            provider: 'Twilio', 
+            error: error.message 
+        };
     }
 };
 
+// ENHANCED: Smart SMS Routing (Cheap First, Expensive Backup)
+const sendSMS = async (phoneNumber, message) => {
+    try {
+        // Extract OTP from message for MSG91
+        const otp = message.match(/\d{6}/)?.[0];
+        if (!otp) {
+            console.error('❌ Could not extract OTP from message:', message);
+            return { success: false, error: 'Invalid OTP format' };
+        }
+
+        console.log(`🚀 SMS ROUTING - Phone: ${phoneNumber}, OTP: ${otp}`);
+        
+        // 🥇 TRY MSG91 FIRST (Cheap - ₹0.20)
+        if (process.env.MSG91_AUTH_KEY && process.env.MSG91_TEMPLATE_ID) {
+            console.log(`💰 Trying MSG91 first (₹0.20 vs ₹7.11)`);
+            const msg91Result = await sendSMS_MSG91(phoneNumber, otp);
+            
+            if (msg91Result.success) {
+                console.log(`🎉 SUCCESS via MSG91 - Saved ₹6.91 per SMS!`);
+                return msg91Result;
+            }
+            
+            console.log(`⚠️ MSG91 failed, trying Twilio backup...`);
+        } else {
+            console.log(`⚠️ MSG91 not configured, using Twilio...`);
+        }
+
+        // 🥈 FALLBACK TO TWILIO (Expensive - ₹7.11)
+        console.log(`💸 Using Twilio backup (₹7.11)`);
+        const twilioResult = await sendSMS_Twilio(phoneNumber, message);
+        
+        if (twilioResult.success) {
+            console.log(`✅ SUCCESS via Twilio (expensive backup)`);
+            return twilioResult;
+        }
+
+        // 🚫 ALL PROVIDERS FAILED
+        console.error(`❌ ALL SMS PROVIDERS FAILED for ${phoneNumber}`);
+        console.log(`📱 CONSOLE FALLBACK - OTP for ${phoneNumber}: ${otp}`);
+        
+        return { 
+            success: false, 
+            error: 'All SMS providers failed',
+            fallback: `OTP: ${otp}`,
+            method: 'console'
+        };
+        
+    } catch (error) {
+        console.error('❌ SMS Routing Error:', error);
+        return { success: false, error: error.message };
+    }
+};
 // Helper functions
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -94,6 +194,42 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// SMS Cost Tracking
+let smsStats = {
+    msg91: { count: 0, cost: 0 },
+    twilio: { count: 0, cost: 0 },
+    total: { count: 0, cost: 0 }
+};
+
+const trackSMSCost = (provider, success) => {
+    if (success) {
+        smsStats.total.count++;
+        
+        if (provider === 'MSG91') {
+            smsStats.msg91.count++;
+            smsStats.msg91.cost += 0.20; // ₹0.20 per SMS
+            smsStats.total.cost += 0.20;
+        } else if (provider === 'Twilio') {
+            smsStats.twilio.count++;
+            smsStats.twilio.cost += 7.11; // ₹7.11 per SMS
+            smsStats.total.cost += 7.11;
+        }
+        
+        console.log(`💰 SMS COST TRACKING:`, {
+            provider,
+            totalSMS: smsStats.total.count,
+            totalCost: `₹${smsStats.total.cost.toFixed(2)}`,
+            msg91Usage: `${smsStats.msg91.count} SMS (₹${smsStats.msg91.cost.toFixed(2)})`,
+            twilioUsage: `${smsStats.twilio.count} SMS (₹${smsStats.twilio.cost.toFixed(2)})`,
+            savings: `₹${((smsStats.twilio.count * 7.11) - (smsStats.msg91.count * 0.20)).toFixed(2)}`
+        });
+    }
+};
+
+// Update your sendSMS function to include cost tracking
+// Add this line after successful SMS sending:
+trackSMSCost(result.provider, result.success);
 
 // NIMCET Colleges Data - 13 Colleges with Real Seats & Fees
 const nimcetColleges = [
@@ -1234,6 +1370,44 @@ app.get('/api/admin/export-all', async (req, res) => {
             details: error.message 
         });
     }
+});
+// Admin SMS Statistics Endpoint
+app.get('/api/admin/sms-stats', (req, res) => {
+    const { adminKey } = req.query;
+    
+    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+    
+    const savings = (smsStats.twilio.count * 7.11) - (smsStats.msg91.count * 0.20);
+    
+    res.json({
+        success: true,
+        smsStatistics: {
+            totalSMS: smsStats.total.count,
+            totalCost: `₹${smsStats.total.cost.toFixed(2)}`,
+            providers: {
+                msg91: {
+                    count: smsStats.msg91.count,
+                    cost: `₹${smsStats.msg91.cost.toFixed(2)}`,
+                    rate: '₹0.20 per SMS'
+                },
+                twilio: {
+                    count: smsStats.twilio.count,
+                    cost: `₹${smsStats.twilio.cost.toFixed(2)}`,
+                    rate: '₹7.11 per SMS'
+                }
+            },
+            savings: {
+                amount: `₹${savings.toFixed(2)}`,
+                percentage: `${((savings / (smsStats.total.count * 7.11)) * 100).toFixed(1)}%`
+            },
+            projectedMonthlyCost: {
+                current: `₹${(smsStats.total.cost * 30).toFixed(2)}`,
+                ifAllTwilio: `₹${(smsStats.total.count * 7.11 * 30).toFixed(2)}`
+            }
+        }
+    });
 });
 
 /// ENHANCED: Admin Reset Limit (GET method for browser)
