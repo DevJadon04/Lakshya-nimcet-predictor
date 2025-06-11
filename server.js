@@ -97,7 +97,7 @@ const sendSMS_MSG91 = async (phoneNumber, otp) => {
         console.log(`📱 Trying MSG91 SMS to ${phoneNumber}`);
         
         const response = await axios.post('https://control.msg91.com/api/v5/otp', {
-            template_id: process.env.MSG91_TEMPLATE_ID || '6849e468d6fc052bd3772503',
+            template_id: process.env.MSG91_TEMPLATE_ID || '684a0a9dd6fc05236e045592',
             mobile: `91${phoneNumber}`,
             authkey: process.env.MSG91_AUTH_KEY,
             otp: otp,
