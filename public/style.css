@@ -1177,3 +1177,206 @@ body {
 .colleges-list::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
+/* 🆕 NEW: Prediction Limit Styles */
+.prediction-limit-display {
+    margin-bottom: 20px;
+}
+
+.limit-info {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.limit-info.success {
+    border-left: 4px solid #4CAF50;
+}
+
+.limit-info.warning {
+    border-left: 4px solid #FF9800;
+    background: rgba(255, 152, 0, 0.1);
+}
+
+.limit-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.limit-icon {
+    font-size: 24px;
+}
+
+.limit-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.limit-progress {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    min-width: 60px;
+}
+
+.remaining-count {
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.switch-number-btn {
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.switch-number-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+}
+
+/* Limit Reached Container */
+.limit-reached-container {
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    border: 2px dashed rgba(255, 152, 0, 0.5);
+}
+
+.limit-reached-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.limit-reached-container h3 {
+    color: #FF9800;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.limit-reached-container p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.limit-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 25px 0;
+    flex-wrap: wrap;
+}
+
+.primary-btn {
+    background: linear-gradient(45deg, #2196F3, #1976D2);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.limit-suggestion {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.limit-suggestion p {
+    margin: 0;
+    color: #4CAF50;
+    font-size: 14px;
+}
+
+/* Disabled Form Elements */
+input:disabled, select:disabled, button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .limit-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .primary-btn, .secondary-btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .limit-progress {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .progress-bar {
+        width: 100%;
+    }
+}

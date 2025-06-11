@@ -1187,7 +1187,9 @@ app.use('/api/*', (req, res) => {
             'POST /api/predict-rank',
             'GET /api/colleges',
             'GET /api/user/predictions',
+            'GET /api/user/prediction-limit',
             'GET /api/admin/predictions',
+            'POST /api/admin/reset-limit',
             'POST /api/logout',
             'GET /health'
         ]
