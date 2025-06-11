@@ -198,7 +198,7 @@ class NIMCETRankPredictor {
             </div>
         `;
         
-        // 🆕 ENABLE form elements
+        // Enable form elements
         if (this.predictBtn) this.predictBtn.disabled = false;
         if (this.marksInput) this.marksInput.disabled = false;
         if (this.categorySelect) this.categorySelect.disabled = false;
@@ -207,46 +207,43 @@ class NIMCETRankPredictor {
         limitDisplay.innerHTML = `
             <div class="limit-info warning">
                 <div class="limit-header">
-                    <span class="limit-icon">⚠️</span>
+                    <span class="limit-icon">🚫</span>
                     <span class="limit-title">Prediction Limit Reached!</span>
                 </div>
                 <div class="limit-details">
                     <div class="limit-message">
-                        <h4>🚫 You have used all ${totalCount} predictions</h4>
+                        <h4>You have used all ${totalCount} predictions</h4>
                         <p>Phone number: <strong>${usageInfo.phoneNumber}</strong></p>
-                        <p>To get more predictions, please use a different phone number.</p>
+                        <p>Use a different phone number to get more predictions.</p>
                     </div>
                     <div class="limit-actions">
                         <button onclick="app.logout()" class="switch-number-btn">
                             📱 Use Different Number
-                        </button>
-                        <button onclick="app.showLimitHelp()" class="help-btn">
-                            ❓ Need Help?
                         </button>
                     </div>
                 </div>
             </div>
         `;
         
-        // 🆕 DISABLE form elements but keep them visible
+        // Disable form elements but keep them visible
         if (this.predictBtn) {
             this.predictBtn.disabled = true;
             this.predictBtn.textContent = '🚫 Limit Reached';
         }
         if (this.marksInput) {
             this.marksInput.disabled = true;
-            this.marksInput.placeholder = 'Prediction limit reached';
+            this.marksInput.placeholder = 'Prediction limit reached - use different number';
         }
         if (this.categorySelect) {
             this.categorySelect.disabled = true;
         }
         
-        // 🆕 SHOW POPUP MESSAGE
+        // Show simple popup
         this.showLimitReachedPopup();
     }
 }
 
-// 🆕 NEW: Show popup when limit reached
+// Simple popup when limit reached
 showLimitReachedPopup() {
     // Don't show popup multiple times
     if (document.getElementById('limitPopup')) return;
@@ -258,23 +255,18 @@ showLimitReachedPopup() {
         <div class="limit-popup">
             <div class="popup-header">
                 <h3>🚫 Prediction Limit Reached</h3>
-                <button onclick="this.closeLimitPopup()" class="close-btn">×</button>
+                <button onclick="app.closeLimitPopup()" class="close-btn">×</button>
             </div>
             <div class="popup-content">
                 <p><strong>You have used all 3 predictions for this phone number.</strong></p>
-                <p>To continue using our service:</p>
-                <ul>
-                    <li>📱 Use a different phone number</li>
-                    <li>📞 Contact admin for reset</li>
-                    <li>💰 Upgrade to premium (future)</li>
-                </ul>
+                <p>To continue, please use a different phone number.</p>
             </div>
             <div class="popup-actions">
                 <button onclick="app.logout()" class="popup-btn primary">
                     📱 Use Different Number
                 </button>
                 <button onclick="app.closeLimitPopup()" class="popup-btn secondary">
-                    📋 View Results Only
+                    Close
                 </button>
             </div>
         </div>
@@ -288,7 +280,7 @@ showLimitReachedPopup() {
     }, 100);
 }
 
-// 🆕 NEW: Close popup function
+// Close popup function
 closeLimitPopup() {
     const popup = document.getElementById('limitPopup');
     if (popup) {

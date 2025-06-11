@@ -1381,7 +1381,7 @@ button:disabled:hover {
     }
 }
 
-/* 🆕 NEW: Popup Styles */
+/* Simple Popup Styles */
 .limit-popup-overlay {
     position: fixed;
     top: 0;
@@ -1405,7 +1405,7 @@ button:disabled:hover {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 20px;
     padding: 30px;
-    max-width: 400px;
+    max-width: 350px;
     width: 90%;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     transform: scale(0.8);
@@ -1450,15 +1450,6 @@ button:disabled:hover {
     margin-bottom: 25px;
 }
 
-.popup-content ul {
-    margin: 15px 0;
-    padding-left: 20px;
-}
-
-.popup-content li {
-    margin: 8px 0;
-}
-
 .popup-actions {
     display: flex;
     gap: 15px;
@@ -1473,7 +1464,7 @@ button:disabled:hover {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 120px;
+    min-width: 100px;
 }
 
 .popup-btn.primary {
@@ -1491,19 +1482,13 @@ button:disabled:hover {
     transform: translateY(-2px);
 }
 
-/* Additional styles for disabled form */
+/* Limit message styling */
 .limit-message h4 {
     color: #FF9800;
     margin: 10px 0;
 }
 
-.help-btn {
-    background: linear-gradient(45deg, #2196F3, #21CBF3);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    margin-left: 10px;
+.limit-message p {
+    margin: 8px 0;
+    color: rgba(255, 255, 255, 0.9);
 }
