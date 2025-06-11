@@ -1164,7 +1164,21 @@ app.get('/health', async (req, res) => {
                 'College Recommendations', 
                 'Category-wise Analysis',
                 'Admission Chances Calculator',
-                'College Filtering System'
+                'College Filtering System',
+                'Prediction Limits (3 per phone)',
+                'Admin Reset Functionality'
+            ],
+            availableEndpoints: [
+                'POST /api/send-otp',
+                'POST /api/verify-otp', 
+                'POST /api/predict-rank',
+                'GET /api/colleges',
+                'GET /api/user/predictions',
+                'GET /api/user/prediction-limit',
+                'GET /api/admin/predictions',
+                'POST /api/admin/reset-limit',
+                'POST /api/logout',
+                'GET /health'
             ]
         });
     } catch (error) {
