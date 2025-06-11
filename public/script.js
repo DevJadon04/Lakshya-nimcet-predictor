@@ -155,72 +155,154 @@ class NIMCETRankPredictor {
         }
     }
 
-    // 🆕 NEW: Update UI to show prediction limits
     updatePredictionLimitUI(usageInfo) {
-        // Create or update limit display
-        let limitDisplay = document.getElementById('predictionLimitDisplay');
-        if (!limitDisplay) {
-            limitDisplay = document.createElement('div');
-            limitDisplay.id = 'predictionLimitDisplay';
-            limitDisplay.className = 'prediction-limit-display';
-            
-            // Insert before the prediction form
-            const predictionStep = document.getElementById('predictionStep');
-            if (predictionStep) {
-                const firstChild = predictionStep.querySelector('.step-content');
-                if (firstChild) {
-                    firstChild.insertBefore(limitDisplay, firstChild.firstChild);
-                }
+    // Create or update limit display
+    let limitDisplay = document.getElementById('predictionLimitDisplay');
+    if (!limitDisplay) {
+        limitDisplay = document.createElement('div');
+        limitDisplay.id = 'predictionLimitDisplay';
+        limitDisplay.className = 'prediction-limit-display';
+        
+        // Insert before the prediction form
+        const predictionStep = document.getElementById('predictionStep');
+        if (predictionStep) {
+            const firstChild = predictionStep.querySelector('.step-content');
+            if (firstChild) {
+                firstChild.insertBefore(limitDisplay, firstChild.firstChild);
             }
         }
-        
-        const remainingCount = usageInfo.predictionsRemaining;
-        const usedCount = usageInfo.predictionsUsed;
-        const totalCount = usageInfo.totalAllowed;
-        
-        if (remainingCount > 0) {
-            limitDisplay.innerHTML = `
-                <div class="limit-info success">
-                    <div class="limit-header">
-                        <span class="limit-icon">📊</span>
-                        <span class="limit-title">Predictions Available</span>
+    }
+    
+    const remainingCount = usageInfo.predictionsRemaining;
+    const usedCount = usageInfo.predictionsUsed;
+    const totalCount = usageInfo.totalAllowed;
+    
+    if (remainingCount > 0) {
+        limitDisplay.innerHTML = `
+            <div class="limit-info success">
+                <div class="limit-header">
+                    <span class="limit-icon">📊</span>
+                    <span class="limit-title">Predictions Available</span>
+                </div>
+                <div class="limit-details">
+                    <div class="limit-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(usedCount/totalCount)*100}%"></div>
+                        </div>
+                        <span class="progress-text">${usedCount}/${totalCount} used</span>
                     </div>
-                    <div class="limit-details">
-                        <div class="limit-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${(usedCount/totalCount)*100}%"></div>
-                            </div>
-                            <span class="progress-text">${usedCount}/${totalCount} used</span>
-                        </div>
-                        <div class="remaining-count">
-                            <strong>${remainingCount} predictions remaining</strong> for ${usageInfo.phoneNumber}
-                        </div>
+                    <div class="remaining-count">
+                        <strong>${remainingCount} predictions remaining</strong> for ${usageInfo.phoneNumber}
                     </div>
                 </div>
-            `;
-        } else {
-            limitDisplay.innerHTML = `
-                <div class="limit-info warning">
-                    <div class="limit-header">
-                        <span class="limit-icon">⚠️</span>
-                        <span class="limit-title">Prediction Limit Reached</span>
-                    </div>
-                    <div class="limit-details">
-                        <p>You have used all <strong>${totalCount} predictions</strong> for ${usageInfo.phoneNumber}</p>
+            </div>
+        `;
+        
+        // 🆕 ENABLE form elements
+        if (this.predictBtn) this.predictBtn.disabled = false;
+        if (this.marksInput) this.marksInput.disabled = false;
+        if (this.categorySelect) this.categorySelect.disabled = false;
+        
+    } else {
+        limitDisplay.innerHTML = `
+            <div class="limit-info warning">
+                <div class="limit-header">
+                    <span class="limit-icon">⚠️</span>
+                    <span class="limit-title">Prediction Limit Reached!</span>
+                </div>
+                <div class="limit-details">
+                    <div class="limit-message">
+                        <h4>🚫 You have used all ${totalCount} predictions</h4>
+                        <p>Phone number: <strong>${usageInfo.phoneNumber}</strong></p>
                         <p>To get more predictions, please use a different phone number.</p>
+                    </div>
+                    <div class="limit-actions">
                         <button onclick="app.logout()" class="switch-number-btn">
-                            Use Different Number
+                            📱 Use Different Number
+                        </button>
+                        <button onclick="app.showLimitHelp()" class="help-btn">
+                            ❓ Need Help?
                         </button>
                     </div>
                 </div>
-            `;
-            
-            // Disable prediction form
-            if (this.predictBtn) this.predictBtn.disabled = true;
-            if (this.marksInput) this.marksInput.disabled = true;
-            if (this.categorySelect) this.categorySelect.disabled = true;
+            </div>
+        `;
+        
+        // 🆕 DISABLE form elements but keep them visible
+        if (this.predictBtn) {
+            this.predictBtn.disabled = true;
+            this.predictBtn.textContent = '🚫 Limit Reached';
         }
+        if (this.marksInput) {
+            this.marksInput.disabled = true;
+            this.marksInput.placeholder = 'Prediction limit reached';
+        }
+        if (this.categorySelect) {
+            this.categorySelect.disabled = true;
+        }
+        
+        // 🆕 SHOW POPUP MESSAGE
+        this.showLimitReachedPopup();
     }
+}
+
+// 🆕 NEW: Show popup when limit reached
+showLimitReachedPopup() {
+    // Don't show popup multiple times
+    if (document.getElementById('limitPopup')) return;
+    
+    const popup = document.createElement('div');
+    popup.id = 'limitPopup';
+    popup.className = 'limit-popup-overlay';
+    popup.innerHTML = `
+        <div class="limit-popup">
+            <div class="popup-header">
+                <h3>🚫 Prediction Limit Reached</h3>
+                <button onclick="this.closeLimitPopup()" class="close-btn">×</button>
+            </div>
+            <div class="popup-content">
+                <p><strong>You have used all 3 predictions for this phone number.</strong></p>
+                <p>To continue using our service:</p>
+                <ul>
+                    <li>📱 Use a different phone number</li>
+                    <li>📞 Contact admin for reset</li>
+                    <li>💰 Upgrade to premium (future)</li>
+                </ul>
+            </div>
+            <div class="popup-actions">
+                <button onclick="app.logout()" class="popup-btn primary">
+                    📱 Use Different Number
+                </button>
+                <button onclick="app.closeLimitPopup()" class="popup-btn secondary">
+                    📋 View Results Only
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Show popup with animation
+    setTimeout(() => {
+        popup.classList.add('show');
+    }, 100);
+}
+
+// 🆕 NEW: Close popup function
+closeLimitPopup() {
+    const popup = document.getElementById('limitPopup');
+    if (popup) {
+        popup.classList.remove('show');
+        setTimeout(() => {
+            popup.remove();
+        }, 300);
+    }
+}
+
+// 🆕 NEW: Show help message
+showLimitHelp() {
+    this.showToast('Contact admin at +91 95550 31137 for assistance', 'info');
+}
     
     validatePhone() {
         const phone = this.phoneInput.value.replace(/\D/g, '');
