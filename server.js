@@ -14,6 +14,21 @@ const Prediction = require('./models/Prediction');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 🎯 PREDICTION LIMIT CONFIGURATION
+const PREDICTION_CONFIG = {
+    LIMIT_PER_PHONE: 3, // Change to 2 for 2 predictions limit
+    ADMIN_UNLIMITED: true, // Admins get unlimited predictions
+    RESET_DAILY: false, // Set to true for daily reset (future feature)
+    PREMIUM_USERS: [], // Phone numbers with unlimited access (future feature)
+};
+
+// Helper function to check if user has unlimited access
+function hasUnlimitedAccess(phoneNumber) {
+    return PREDICTION_CONFIG.ADMIN_UNLIMITED && 
+           (phoneNumber === '9826577904' || // Your number
+            PREDICTION_CONFIG.PREMIUM_USERS.includes(phoneNumber));
+}
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/nimcet-predictor', {
     useNewUrlParser: true,
@@ -637,6 +652,7 @@ app.post('/api/verify-otp', async (req, res) => {
 });
 
 // Predict Rank Route (Updated for MongoDB)
+// Predict Rank Route (Updated with Prediction Limits)
 app.post('/api/predict-rank', async (req, res) => {
     try {
         const { marks, category, token } = req.body;
@@ -665,7 +681,27 @@ app.post('/api/predict-rank', async (req, res) => {
             });
         }
         
-        // Find rank prediction
+        // 🚨 CHECK PREDICTION LIMIT (NEW FEATURE)
+        // 🆕 UPDATED: CHECK PREDICTION LIMIT (CONFIGURABLE)
+                const PREDICTION_LIMIT = PREDICTION_CONFIG.LIMIT_PER_PHONE;
+                const existingPredictions = await Prediction.countDocuments({ userId: user._id });
+
+
+                if (!hasUnlimitedAccess(user.phoneNumber) && existingPredictions >=       PREDICTION_LIMIT) {
+                return res.status(429).json({ // 429 = Too Many Requests
+                success: false, 
+                message: `Prediction limit reached! You have used all ${PREDICTION_LIMIT} predictions for this number.`,
+                errorType: 'LIMIT_REACHED',
+                details: {
+                    predictionsUsed: existingPredictions,
+                    predictionsAllowed: PREDICTION_LIMIT,
+                    phoneNumber: user.phoneNumber,
+                    suggestion: 'Use a different phone number to get more predictions'
+                }
+            });
+        }
+        
+        // Find rank prediction (existing code)
         const prediction = nimcetRankData.find(p => 
             marks >= p.minMarks && marks <= p.maxMarks && p.category === category
         );
@@ -707,6 +743,9 @@ app.post('/api/predict-rank', async (req, res) => {
         
         await newPrediction.save();
         
+        // Calculate remaining predictions
+        const remainingPredictions = PREDICTION_LIMIT - (existingPredictions + 1);
+        
         res.json({
             success: true,
             prediction: {
@@ -733,6 +772,13 @@ app.post('/api/predict-rank', async (req, res) => {
                     moderateChanceColleges: eligibleColleges.filter(c => c.chance >= 50 && c.chance < 75).length,
                     lowChanceColleges: eligibleColleges.filter(c => c.chance < 50).length
                 }
+            },
+            // 🆕 NEW: Prediction Usage Info
+            usageInfo: {
+                predictionsUsed: existingPredictions + 1,
+                predictionsRemaining: remainingPredictions,
+                totalAllowed: PREDICTION_LIMIT,
+                phoneNumber: user.phoneNumber.replace(/(.{3})(.{3})(.{4})/, '$1***$3') // Masked phone number
             }
         });
         
@@ -781,7 +827,42 @@ app.get('/api/colleges', (req, res) => {
     }
 });
 
-// Get user predictions history (Updated for MongoDB)
+
+app.get('/api/user/prediction-limit', async (req, res) => {
+    try {
+        const { token } = req.query;
+        
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'Token is required' });
+        }
+        
+        const user = await User.findOne({ sessionToken: token, isVerified: true });
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        const PREDICTION_LIMIT = PREDICTION_CONFIG.LIMIT_PER_PHONE; // Use config
+        const predictionsUsed = await Prediction.countDocuments({ userId: user._id });
+        const remainingPredictions = Math.max(0, PREDICTION_LIMIT - predictionsUsed);
+        
+        res.json({
+            success: true,
+            usageInfo: {
+                predictionsUsed: predictionsUsed,
+                predictionsRemaining: remainingPredictions,
+                totalAllowed: PREDICTION_LIMIT,
+                canPredict: remainingPredictions > 0,
+                phoneNumber: user.phoneNumber.replace(/(.{3})(.{3})(.{4})/, '$1***$3'),
+                user: user.fullName
+            }
+        });
+        
+    } catch (error) {
+        console.error('Check Limit Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to check prediction limit' });
+    }
+});
+
 app.get('/api/user/predictions', async (req, res) => {
     try {
         const { token } = req.query;
@@ -861,7 +942,6 @@ app.get('/api/admin/predictions', async (req, res) => {
     }
 });
 
-// Logout endpoint (Updated for MongoDB)
 app.post('/api/logout', async (req, res) => {
     try {
         const { token } = req.body;
@@ -1018,6 +1098,36 @@ app.get('/api/admin/export-all', async (req, res) => {
             error: 'Failed to export complete data',
             details: error.message 
         });
+    }
+});
+
+// Admin endpoint to reset user prediction limit
+app.post('/api/admin/reset-limit', async (req, res) => {
+    try {
+        const { adminKey, phoneNumber } = req.body;
+        
+        if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'admin123') {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        const user = await User.findOne({ phoneNumber });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        // Delete all predictions for this user (reset limit)
+        const deletedCount = await Prediction.deleteMany({ userId: user._id });
+        
+        res.json({
+            success: true,
+            message: `Prediction limit reset for ${phoneNumber}`,
+            deletedPredictions: deletedCount.deletedCount,
+            user: user.fullName
+        });
+        
+    } catch (error) {
+        console.error('Reset Limit Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to reset limit' });
     }
 });
 
