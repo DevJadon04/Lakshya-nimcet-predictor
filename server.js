@@ -90,46 +90,52 @@ const trackSMSCost = (provider, success) => {
         console.log(`💰 SMS STATS: Total: ${smsStats.total.count} SMS, Cost: ₹${smsStats.total.cost.toFixed(2)}`);
     }
 };
-// SIMPLE MSG91 SMS API - No Template Required
-const sendSMS_MSG91_Simple = async (phoneNumber, otp) => {
+// ✅ ALTERNATIVE: MSG91 Send HTTP API (No template needed)
+const sendSMS_MSG91_HTTP = async (phoneNumber, otp) => {
     try {
-        console.log(`📱 MSG91 Simple SMS API - Phone: ${phoneNumber}, OTP: ${otp}`);
+        console.log(`📱 MSG91 HTTP API - Phone: ${phoneNumber}, OTP: ${otp}`);
         
-        // Method 1: Simple SendOTP API (most reliable)
-        const response = await axios.get('https://api.msg91.com/api/sendotp.php', {
+        const message = `Your NIMCET Rank Predictor OTP is ${otp}. Valid for 10 minutes. Do not share with anyone.`;
+        
+        const response = await axios.get('https://api.msg91.com/api/sendhttp.php', {
             params: {
                 authkey: process.env.MSG91_AUTH_KEY,
-                mobile: phoneNumber, // Don't add +91 for this API
-                message: `Your NIMCET Rank Predictor OTP is ${otp}. Valid for 10 minutes. Do not share.`,
-                sender: 'VERIFY', // Generic sender
-                otp: otp,
-                otp_length: 6
+                mobiles: phoneNumber,
+                message: message,
+                sender: 'VERIFY', // or your approved sender ID
+                route: '4', // Transactional route
+                country: '91'
             },
             timeout: 10000
         });
 
-        console.log(`📋 MSG91 Simple Response:`, response.data);
+        console.log(`📋 MSG91 HTTP Response:`, response.data);
         
-        // Check response
-        if (response.data && (response.data.type === 'success' || response.data.message)) {
-            console.log(`✅ MSG91 Simple SMS Success - Cost: ₹0.20`);
-            return { 
-                success: true, 
-                provider: 'MSG91-Simple', 
-                cost: '₹0.20',
-                method: 'msg91-simple',
-                response: response.data
-            };
-        } else {
-            console.log(`❌ MSG91 Simple Error:`, response.data);
-            return { 
-                success: false, 
-                error: response.data 
-            };
+        // Check if message was sent successfully
+        if (response.status === 200 && response.data) {
+            // MSG91 HTTP API returns different response formats
+            const responseText = response.data.toString();
+            
+            if (responseText.includes('success') || !responseText.includes('error')) {
+                console.log(`✅ MSG91 HTTP Success - Cost: ₹0.20`);
+                return { 
+                    success: true, 
+                    provider: 'MSG91-HTTP', 
+                    cost: '₹0.20',
+                    method: 'msg91-http',
+                    response: response.data
+                };
+            }
         }
         
+        console.log(`❌ MSG91 HTTP Error:`, response.data);
+        return { 
+            success: false, 
+            error: response.data 
+        };
+        
     } catch (error) {
-        console.error(`❌ MSG91 Simple API Error:`, {
+        console.error(`❌ MSG91 HTTP Error:`, {
             message: error.message,
             response: error.response?.data,
             status: error.response?.status
@@ -227,7 +233,7 @@ const sendSMS = async (phoneNumber, message) => {
         // Try MSG91 first (cheap)
         if (process.env.MSG91_AUTH_KEY && process.env.MSG91_TEMPLATE_ID) {
             console.log(`💰 Trying MSG91 first (₹0.20)`);
-            const msg91Result = await sendSMS_MSG91(phoneNumber, otp);
+            const msg91Result = await sendSMS_MSG91_HTTP(phoneNumber, otp);
             
             if (msg91Result.success) {
                 console.log(`🎉 MSG91 SUCCESS - Saved ₹6.91!`);
