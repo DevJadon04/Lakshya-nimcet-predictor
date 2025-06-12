@@ -68,6 +68,7 @@ const axios = require('axios');
 
 // SMS Cost Tracking (Fixed)
 let smsStats = {
+    fast2sms: { count: 0, cost: 0 },    // ADD THIS LINE
     msg91: { count: 0, cost: 0 },
     twilio: { count: 0, cost: 0 },
     total: { count: 0, cost: 0 }
@@ -77,7 +78,11 @@ const trackSMSCost = (provider, success) => {
     if (success) {
         smsStats.total.count++;
         
-        if (provider === 'MSG91') {
+        if (provider === 'Fast2SMS') {           // ADD THIS BLOCK
+            smsStats.fast2sms.count++;
+            smsStats.fast2sms.cost += 0.45;
+            smsStats.total.cost += 0.45;
+        } else if (provider === 'MSG91') {
             smsStats.msg91.count++;
             smsStats.msg91.cost += 0.20;
             smsStats.total.cost += 0.20;
@@ -90,52 +95,43 @@ const trackSMSCost = (provider, success) => {
         console.log(`💰 SMS STATS: Total: ${smsStats.total.count} SMS, Cost: ₹${smsStats.total.cost.toFixed(2)}`);
     }
 };
-// ✅ ALTERNATIVE: MSG91 Send HTTP API (No template needed)
-const sendSMS_MSG91_HTTP = async (phoneNumber, otp) => {
+// ✅ FAST2SMS IMPLEMENTATION (ADD THIS NEW FUNCTION)
+const sendSMS_Fast2SMS = async (phoneNumber, otp) => {
     try {
-        console.log(`📱 MSG91 HTTP API - Phone: ${phoneNumber}, OTP: ${otp}`);
+        console.log(`📱 Fast2SMS - Sending OTP ${otp} to ${phoneNumber}`);
         
-        const message = `Your NIMCET Rank Predictor OTP is ${otp}. Valid for 10 minutes. Do not share with anyone.`;
-        
-        const response = await axios.get('https://api.msg91.com/api/sendhttp.php', {
+        const response = await axios.get('https://www.fast2sms.com/dev/bulkV2', {
             params: {
-                authkey: process.env.MSG91_AUTH_KEY,
-                mobiles: phoneNumber,
-                message: message,
-                sender: 'NIMCET', // or your approved sender ID
-                route: '4', // Transactional route
-                country: '91'
+                authorization: process.env.FAST2SMS_API_KEY,
+                variables_values: otp,
+                route: 'otp',
+                numbers: phoneNumber
             },
-            timeout: 10000
+            timeout: 15000
         });
 
-        console.log(`📋 MSG91 HTTP Response:`, response.data);
+        console.log(`📋 Fast2SMS Response:`, response.data);
         
-        // Check if message was sent successfully
-        if (response.status === 200 && response.data) {
-            // MSG91 HTTP API returns different response formats
-            const responseText = response.data.toString();
-            
-            if (responseText.includes('success') || !responseText.includes('error')) {
-                console.log(`✅ MSG91 HTTP Success - Cost: ₹0.20`);
-                return { 
-                    success: true, 
-                    provider: 'MSG91-HTTP', 
-                    cost: '₹0.20',
-                    method: 'msg91-http',
-                    response: response.data
-                };
-            }
+        if (response.data && response.data.return === true) {
+            console.log(`✅ Fast2SMS Success - Cost: ₹0.45`);
+            return { 
+                success: true, 
+                provider: 'Fast2SMS', 
+                cost: '₹0.45',
+                requestId: response.data.request_id,
+                method: 'fast2sms'
+            };
+        } else {
+            console.log(`❌ Fast2SMS Failed:`, response.data);
+            return { 
+                success: false, 
+                provider: 'Fast2SMS',
+                error: response.data.message || 'SMS sending failed'
+            };
         }
         
-        console.log(`❌ MSG91 HTTP Error:`, response.data);
-        return { 
-            success: false, 
-            error: response.data 
-        };
-        
     } catch (error) {
-        console.error(`❌ MSG91 HTTP Error:`, {
+        console.error(`❌ Fast2SMS Error:`, {
             message: error.message,
             response: error.response?.data,
             status: error.response?.status
@@ -143,7 +139,8 @@ const sendSMS_MSG91_HTTP = async (phoneNumber, otp) => {
         
         return { 
             success: false, 
-            error: error.response?.data || error.message 
+            provider: 'Fast2SMS',
+            error: error.response?.data?.message || error.message 
         };
     }
 };
@@ -218,7 +215,7 @@ const sendSMS_Twilio = async (phoneNumber, message) => {
     }
 };
 
-// Enhanced SMS Function (Fixed)
+// 🚀 ENHANCED SMS Function with Fast2SMS Priority
 const sendSMS = async (phoneNumber, message) => {
     try {
         // Extract OTP from message
@@ -230,29 +227,47 @@ const sendSMS = async (phoneNumber, message) => {
 
         console.log(`🚀 Sending SMS to ${phoneNumber} - OTP: ${otp}`);
         
-        // Try MSG91 first (cheap)
-        if (process.env.MSG91_AUTH_KEY && process.env.MSG91_TEMPLATE_ID) {
-            console.log(`💰 Trying MSG91 first (₹0.20)`);
+        // 1️⃣ Try Fast2SMS FIRST (₹0.45 - Now working!)
+        if (process.env.FAST2SMS_API_KEY && process.env.FAST2SMS_ENABLED !== 'false') {
+            console.log(`💰 Trying Fast2SMS first (₹0.45)`);
+            const fast2smsResult = await sendSMS_Fast2SMS(phoneNumber, otp);
+            
+            if (fast2smsResult.success) {
+                console.log(`🎉 Fast2SMS SUCCESS - Cost effective!`);
+                trackSMSCost('Fast2SMS', true);
+                return fast2smsResult;
+            }
+            
+            console.log(`⚠️ Fast2SMS failed, trying MSG91 backup...`);
+        }
+
+        // 2️⃣ Try MSG91 HTTP (₹0.20 - Backup)
+        if (process.env.MSG91_AUTH_KEY) {
+            console.log(`💰 Trying MSG91 backup (₹0.20)`);
             const msg91Result = await sendSMS_MSG91_HTTP(phoneNumber, otp);
             
             if (msg91Result.success) {
-                console.log(`🎉 MSG91 SUCCESS - Saved ₹6.91!`);
+                console.log(`✅ MSG91 SUCCESS (backup)`);
+                trackSMSCost('MSG91', true);
                 return msg91Result;
             }
             
             console.log(`⚠️ MSG91 failed, trying Twilio...`);
         }
 
-        // Fallback to Twilio (expensive)
-        console.log(`💸 Using Twilio backup (₹7.11)`);
-        const twilioResult = await sendSMS_Twilio(phoneNumber, message);
-        
-        if (twilioResult.success) {
-            console.log(`✅ Twilio SUCCESS (backup)`);
-            return twilioResult;
+        // 3️⃣ Try Twilio (₹7.11 - Expensive last resort)
+        if (SMS_ENABLED && twilioClient) {
+            console.log(`💸 Using Twilio last resort (₹7.11)`);
+            const twilioResult = await sendSMS_Twilio(phoneNumber, message);
+            
+            if (twilioResult.success) {
+                console.log(`✅ Twilio SUCCESS (expensive backup)`);
+                trackSMSCost('Twilio', true);
+                return twilioResult;
+            }
         }
 
-        // All failed
+        // ❌ All SMS providers failed - Console fallback
         console.error(`❌ ALL SMS PROVIDERS FAILED`);
         console.log(`📱 CONSOLE FALLBACK - OTP: ${otp}`);
         
@@ -1425,32 +1440,43 @@ app.get('/api/admin/sms-stats', (req, res) => {
         return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
     
-    const savings = (smsStats.twilio.count * 7.11) - (smsStats.msg91.count * 0.20);
+    const totalSMS = smsStats.total.count;
+    const currentCost = smsStats.total.cost;
+    const ifAllTwilio = totalSMS * 7.11;
+    const savings = ifAllTwilio - currentCost;
     
     res.json({
         success: true,
         smsStatistics: {
-            totalSMS: smsStats.total.count,
-            totalCost: `₹${smsStats.total.cost.toFixed(2)}`,
+            totalSMS: totalSMS,
+            totalCost: `₹${currentCost.toFixed(2)}`,
             providers: {
+                fast2sms: {                    // ADD THIS BLOCK
+                    count: smsStats.fast2sms.count,
+                    cost: `₹${smsStats.fast2sms.cost.toFixed(2)}`,
+                    rate: '₹0.45 per SMS',
+                    percentage: totalSMS > 0 ? `${((smsStats.fast2sms.count / totalSMS) * 100).toFixed(1)}%` : '0%'
+                },
                 msg91: {
                     count: smsStats.msg91.count,
                     cost: `₹${smsStats.msg91.cost.toFixed(2)}`,
-                    rate: '₹0.20 per SMS'
+                    rate: '₹0.20 per SMS',
+                    percentage: totalSMS > 0 ? `${((smsStats.msg91.count / totalSMS) * 100).toFixed(1)}%` : '0%'
                 },
                 twilio: {
                     count: smsStats.twilio.count,
                     cost: `₹${smsStats.twilio.cost.toFixed(2)}`,
-                    rate: '₹7.11 per SMS'
+                    rate: '₹7.11 per SMS',
+                    percentage: totalSMS > 0 ? `${((smsStats.twilio.count / totalSMS) * 100).toFixed(1)}%` : '0%'
                 }
             },
             savings: {
                 amount: `₹${savings.toFixed(2)}`,
-                percentage: `${((savings / (smsStats.total.count * 7.11)) * 100).toFixed(1)}%`
+                percentage: totalSMS > 0 ? `${((savings / ifAllTwilio) * 100).toFixed(1)}%` : '0%'
             },
             projectedMonthlyCost: {
-                current: `₹${(smsStats.total.cost * 30).toFixed(2)}`,
-                ifAllTwilio: `₹${(smsStats.total.count * 7.11 * 30).toFixed(2)}`
+                current: `₹${(currentCost * 30).toFixed(2)}`,
+                ifAllTwilio: `₹${(ifAllTwilio * 30).toFixed(2)}`
             }
         }
     });
@@ -1563,6 +1589,55 @@ app.post('/api/admin/reset-limit', async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to reset limit', details: error.message });
     }
 });
+
+// 🧪 TEMPORARY: Test Fast2SMS Integration
+app.get('/test-fast2sms', async (req, res) => {
+    try {
+        const { phone } = req.query;
+        
+        if (!phone) {
+            return res.json({ 
+                error: 'Add ?phone=YOUR_10_DIGIT_NUMBER to URL',
+                example: 'https://your-app.onrender.com/test-fast2sms?phone=9876543210'
+            });
+        }
+        
+        // Validate phone number
+        if (!/^[6-9]\d{9}$/.test(phone)) {
+            return res.json({ 
+                error: 'Invalid phone number. Must be 10 digits starting with 6-9',
+                provided: phone
+            });
+        }
+        
+        const testOTP = Math.floor(100000 + Math.random() * 900000).toString();
+        const testMessage = `Your NIMCET Rank Predictor OTP is: ${testOTP}. Valid for 10 minutes.`;
+        
+        console.log(`🧪 Testing Fast2SMS with phone: ${phone}`);
+        
+        const result = await sendSMS(phone, testMessage);
+        
+        res.json({
+            success: result.success,
+            provider: result.provider,
+            cost: result.cost,
+            method: result.method,
+            message: result.success ? 'SMS sent successfully!' : 'SMS failed',
+            error: result.error,
+            testOTP: testOTP,
+            checkPhone: 'Check your phone/WhatsApp for SMS',
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Test Fast2SMS Error:', error);
+        res.status(500).json({ 
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Health check endpoint (Updated for MongoDB)
 app.get('/health', async (req, res) => {
     try {
