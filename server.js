@@ -102,7 +102,7 @@ const sendSMS_MSG91_HTTP = async (phoneNumber, otp) => {
                 authkey: process.env.MSG91_AUTH_KEY,
                 mobiles: phoneNumber,
                 message: message,
-                sender: 'VERIFY', // or your approved sender ID
+                sender: 'NIMCET', // or your approved sender ID
                 route: '4', // Transactional route
                 country: '91'
             },
