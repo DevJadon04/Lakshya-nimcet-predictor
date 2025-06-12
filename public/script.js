@@ -316,51 +316,133 @@ showLimitHelp() {
     }
     
     async sendOTP() {
-        const phoneNumber = this.phoneInput.value.trim();
-        
-        if (phoneNumber.length !== 10) {
-            this.showToast('Please enter a valid 10-digit phone number', 'error');
-            return;
-        }
-        
-        this.showLoading(true);
-        
-        try {
-            const response = await fetch('/api/send-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phoneNumber })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.displayPhone.textContent = phoneNumber;
-                if (data.debug) {
-                    this.otpDebug.innerHTML = `<strong>Debug OTP:</strong> ${data.debug}`;
-                }
-                
-                // Show name field if required
-                if (data.requiresName) {
-                    this.nameInputContainer.style.display = 'block';
-                    this.fullNameInput.focus();
-                } else {
-                    this.nameInputContainer.style.display = 'none';
-                }
-                
-                this.showStep('otp');
-                this.showToast('OTP sent successfully!', 'success');
-                this.otpInput.focus();
-                        } else {
-                this.showToast(data.message || 'Failed to send OTP', 'error');
-            }
-        } catch (error) {
-            this.showToast('Network error. Please try again.', 'error');
-        }
-        
-        this.showLoading(false);
+    const phoneNumber = this.phoneInput.value.trim();
+    
+    if (phoneNumber.length !== 10) {
+        this.showToast('Please enter a valid 10-digit phone number', 'error');
+        return;
     }
     
+    this.showLoading(true);
+    
+    try {
+        const response = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneNumber })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            this.displayPhone.textContent = phoneNumber;
+            if (data.debug) {
+                this.otpDebug.innerHTML = `<strong>Debug OTP:</strong> ${data.debug}`;
+            }
+            
+            // Show name field if required
+            if (data.requiresName) {
+                this.nameInputContainer.style.display = 'block';
+                this.fullNameInput.focus();
+            } else {
+                this.nameInputContainer.style.display = 'none';
+            }
+            
+            // 🚀 ENHANCED: Show delivery-specific messages
+            this.showDeliveryMessages(data);
+            
+            this.showStep('otp');
+            this.otpInput.focus();
+        } else {
+            this.showToast(data.message || 'Failed to send OTP', 'error');
+        }
+    } catch (error) {
+        this.showToast('Network error. Please try again.', 'error');
+    }
+    
+    this.showLoading(false);
+}
+
+// 🆕 NEW: Show delivery-specific messages
+showDeliveryMessages(data) {
+    let primaryMessage = '📱 OTP sent successfully!';
+    let instructionMessage = 'Check your SMS inbox';
+    let deliveryMethod = 'SMS';
+    
+    // Check delivery info from server
+    if (data.deliveryInfo) {
+        deliveryMethod = data.deliveryInfo.method;
+        
+        if (data.deliveryInfo.provider === 'Fast2SMS') {
+            primaryMessage = '📱 OTP sent via SMS/WhatsApp!';
+            instructionMessage = '💡 Check both SMS and WhatsApp messages';
+        } else if (data.deliveryInfo.provider === 'MSG91') {
+            primaryMessage = '📱 OTP sent via SMS!';
+            instructionMessage = '💡 Check your SMS inbox';
+        } else if (data.deliveryInfo.provider === 'Twilio') {
+            primaryMessage = '📱 OTP sent via SMS!';
+            instructionMessage = '💡 Check your SMS inbox';
+        }
+    }
+    
+    // Show primary success message
+    this.showToast(primaryMessage, 'success');
+    
+    // Show instruction after 1.5 seconds
+    setTimeout(() => {
+        this.showToast(instructionMessage, 'info');
+    }, 1500);
+    
+    // Show expiry info after 3 seconds
+    setTimeout(() => {
+        this.showToast('⏰ OTP expires in 10 minutes', 'warning');
+    }, 3000);
+    
+    // 🆕 Add delivery indicator to OTP step
+    this.addDeliveryIndicator(deliveryMethod, data.deliveryInfo);
+}
+
+// 🆕 NEW: Add delivery indicator to OTP step
+addDeliveryIndicator(method, deliveryInfo) {
+    // Remove existing indicator
+    const existingIndicator = document.getElementById('deliveryIndicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    // Create new delivery indicator
+    const indicator = document.createElement('div');
+    indicator.id = 'deliveryIndicator';
+    indicator.className = 'delivery-indicator';
+    
+    let iconClass = '📱';
+    let methodText = method;
+    let instructionText = 'Check your messages';
+    
+    if (deliveryInfo && deliveryInfo.provider === 'Fast2SMS') {
+        iconClass = '💬';
+        methodText = 'SMS/WhatsApp';
+        instructionText = 'OTP sent via SMS or WhatsApp for better delivery';
+    }
+    
+    indicator.innerHTML = `
+        <div class="delivery-info-card">
+            <div class="delivery-header">
+                <span class="delivery-icon">${iconClass}</span>
+                <span class="delivery-text">OTP sent via ${methodText}</span>
+            </div>
+            <div class="delivery-instruction">
+                ${instructionText}
+            </div>
+        </div>
+    `;
+    
+    // Insert after phone display
+    const phoneDisplay = this.displayPhone.parentElement;
+    if (phoneDisplay && phoneDisplay.nextSibling) {
+        phoneDisplay.parentNode.insertBefore(indicator, phoneDisplay.nextSibling);
+    }
+}
     async verifyOTP() {
         const phoneNumber = this.displayPhone.textContent;
         const otp = this.otpInput.value.trim();
@@ -469,35 +551,37 @@ showLimitHelp() {
     }
     
     async resendOTP() {
-        const phoneNumber = this.displayPhone.textContent;
-        this.showLoading(true);
+    const phoneNumber = this.displayPhone.textContent;
+    this.showLoading(true);
+    
+    try {
+        const response = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneNumber })
+        });
         
-        try {
-            const response = await fetch('/api/send-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phoneNumber })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.debug) {
-                    this.otpDebug.innerHTML = `<strong>Debug OTP:</strong> ${data.debug}`;
-                }
-                this.showToast('OTP resent successfully!', 'success');
-                this.otpInput.value = '';
-                this.otpInput.focus();
-            } else {
-                this.showToast(data.message || 'Failed to resend OTP', 'error');
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.debug) {
+                this.otpDebug.innerHTML = `<strong>Debug OTP:</strong> ${data.debug}`;
             }
-        } catch (error) {
-            this.showToast('Network error. Please try again.', 'error');
+            
+            // 🚀 ENHANCED: Show delivery messages for resend too
+            this.showDeliveryMessages(data);
+            
+            this.otpInput.value = '';
+            this.otpInput.focus();
+        } else {
+            this.showToast(data.message || 'Failed to resend OTP', 'error');
         }
-        
-        this.showLoading(false);
+    } catch (error) {
+        this.showToast('Network error. Please try again.', 'error');
     }
-
+    
+    this.showLoading(false);
+}
     async makeAPICall(url, data, method = 'POST') {
         try {
             const response = await fetch(url, {

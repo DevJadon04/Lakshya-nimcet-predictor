@@ -830,16 +830,38 @@ app.post('/api/send-otp', async (req, res) => {
         
         console.log(`📱 OTP SENT to ${phoneNumber} - Method: ${smsResult.method}`);
         
-        res.json({
-            success: true,
-            message: smsResult.method === 'twilio' 
-                ? 'OTP sent to your mobile number' 
-                : 'OTP generated successfully',
-            requiresName: !user.fullName || user.fullName === 'Pending',
-            expiresIn: '10 minutes',
-            remainingPredictions: hasUnlimitedAccess(phoneNumber) ? 'Unlimited' : Math.max(0, PREDICTION_CONFIG.LIMIT_PER_PHONE - (existingUser ? await Prediction.countDocuments({ userId: existingUser._id }) : 0))
-        });
-        
+        // 📱 Enhanced message for WhatsApp/SMS delivery
+let deliveryMessage = 'OTP sent successfully!';
+let deliveryMethod = 'SMS';
+
+if (smsResult.provider === 'Fast2SMS') {
+    deliveryMessage = 'OTP sent to your number via SMS/WhatsApp';
+    deliveryMethod = 'SMS/WhatsApp';
+} else if (smsResult.provider === 'MSG91') {
+    deliveryMessage = 'OTP sent via SMS';
+    deliveryMethod = 'SMS';
+} else if (smsResult.provider === 'Twilio') {
+    deliveryMessage = 'OTP sent via SMS';
+    deliveryMethod = 'SMS';
+} else {
+    deliveryMessage = 'OTP generated (check console for development)';
+    deliveryMethod = 'Console';
+}
+
+res.json({
+    success: true,
+    message: deliveryMessage,
+    deliveryInfo: {
+        method: deliveryMethod,
+        provider: smsResult.provider || 'Unknown',
+        instruction: smsResult.provider === 'Fast2SMS' 
+            ? 'Check both SMS and WhatsApp for your OTP'
+            : 'Check your SMS inbox for the OTP'
+    },
+    requiresName: !user.fullName || user.fullName === 'Pending',
+    expiresIn: '10 minutes',
+    remainingPredictions: hasUnlimitedAccess(phoneNumber) ? 'Unlimited' : Math.max(0, PREDICTION_CONFIG.LIMIT_PER_PHONE - (existingUser ? await Prediction.countDocuments({ userId: existingUser._id }) : 0))
+});
     } catch (error) {
         console.error('Send OTP Error:', error.message);
         res.status(500).json({ 

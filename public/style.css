@@ -1492,3 +1492,444 @@ button:disabled:hover {
     margin: 8px 0;
     color: rgba(255, 255, 255, 0.9);
 }
+/* 📱 Delivery Indicator Styles */
+.delivery-indicator {
+    margin: 15px 0;
+    animation: slideDown 0.4s ease-out;
+}
+
+.delivery-info-card {
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.delivery-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.delivery-icon {
+    font-size: 18px;
+}
+
+.delivery-text {
+    font-size: 14px;
+}
+
+.delivery-instruction {
+    font-size: 12px;
+    opacity: 0.9;
+    line-height: 1.3;
+}
+
+/* SMS-only delivery (different color) */
+.delivery-info-card.sms-only {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+/* Enhanced Toast Styles for Different Types */
+.toast.info {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+}
+
+.toast.warning {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+}
+
+.toast.success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.toast.error {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    color: white;
+}
+
+/* Animation for delivery indicator */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive delivery indicator */
+@media (max-width: 768px) {
+    .delivery-info-card {
+        padding: 10px 12px;
+        margin: 10px 0;
+    }
+    
+    .delivery-header {
+        font-size: 13px;
+    }
+    
+    .delivery-instruction {
+        font-size: 11px;
+    }
+}
+/* 📱 Additional WhatsApp Delivery Support Styles */
+
+/* Phone Display Container */
+.phone-display-container {
+    margin-bottom: 20px;
+}
+
+.otp-info {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #666;
+}
+
+/* Delivery Status Container (Permanent Display) */
+.delivery-status-container {
+    background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(18, 140, 126, 0.1));
+    border: 2px solid rgba(37, 211, 102, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 15px 0;
+    text-align: center;
+    animation: slideDown 0.4s ease-out;
+}
+
+.delivery-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #128C7E;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.delivery-note {
+    color: #25D366;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+#deliveryMethodIcon {
+    font-size: 16px;
+}
+
+/* OTP Actions Styling */
+.otp-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.otp-actions .btn {
+    flex: 1;
+}
+
+/* OTP Help Section */
+.otp-help {
+    margin-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.help-details {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.help-details summary {
+    cursor: pointer;
+    color: #4CAF50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    list-style: none;
+    outline: none;
+}
+
+.help-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.help-details[open] summary {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+}
+
+.help-content {
+    animation: slideDown 0.3s ease-out;
+}
+
+.help-content ul {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.help-content li {
+    padding: 6px 0;
+    color: #ccc;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Enhanced User Card */
+.user-details {
+    flex: 1;
+}
+
+#memberSince {
+    color: #999;
+    font-size: 12px;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Enhanced OTP Debug */
+.otp-debug {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 15px 0;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    color: #4CAF50;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Button Disabled States */
+.btn:disabled {
+    background: #666 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.btn:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Enhanced Input Validation */
+.input-group input:invalid {
+    border-color: #f44336;
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+.input-group input:valid {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Loading States */
+.btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Enhanced Info Text */
+.info-text {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.info-text i {
+    color: #4CAF50;
+}
+
+/* Prediction Limit Styles (for future use) */
+.prediction-limit-display {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    animation: slideDown 0.4s ease-out;
+}
+
+.limit-info {
+    padding: 16px;
+    color: white;
+}
+
+.limit-info.success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.limit-info.warning {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+
+.limit-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.limit-icon {
+    font-size: 20px;
+}
+
+.limit-title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.limit-details {
+    font-size: 14px;
+}
+
+.limit-progress {
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.remaining-count {
+    font-weight: 600;
+}
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 480px) {
+    .otp-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .delivery-status-container {
+        padding: 10px 12px;
+        margin: 10px 0;
+    }
+    
+    .delivery-status {
+        font-size: 13px;
+    }
+    
+    .delivery-note {
+        font-size: 11px;
+    }
+    
+    .help-details {
+        padding: 8px;
+    }
+    
+    .help-content li {
+        font-size: 12px;
+    }
+    
+    .otp-info {
+        font-size: 14px;
+    }
+}
+
+/* Dark Theme Enhancements */
+@media (prefers-color-scheme: dark) {
+    .delivery-status-container {
+        background: linear-gradient(135deg, rgba(37, 211, 102, 0.15), rgba(18, 140, 126, 0.15));
+        border-color: rgba(37, 211, 102, 0.4);
+    }
+    
+    .help-details {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .otp-debug {
+        background: rgba(76, 175, 80, 0.15);
+        border-color: rgba(76, 175, 80, 0.4);
+    }
+}
+
+/* Accessibility Improvements */
+.btn:focus-visible {
+    outline: 2px solid #4CAF50;
+    outline-offset: 2px;
+}
+
+.help-details summary:focus-visible {
+    outline: 2px solid #4CAF50;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Print Styles */
+@media print {
+    .delivery-indicator,
+    .delivery-status-container,
+    .otp-help,
+    .otp-actions {
+        display: none;
+    }
+}

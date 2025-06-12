@@ -22,7 +22,7 @@
                 <span><i class="fas fa-clock"></i> Total Marks: 1000</span>
             </div>
             
-            <!-- Trainer Section - NEW ADDITION -->
+            <!-- Trainer Section -->
             <div class="trainer-section">
                 <div class="trainer-card">
                     <div class="trainer-photo">
@@ -81,11 +81,25 @@
                     <h2>Enter OTP</h2>
                 </div>
                 <div class="card-body">
-                    <p class="otp-info">OTP sent to <span id="displayPhone"></span></p>
+                    <div class="phone-display-container">
+                        <p class="otp-info">OTP sent to <span id="displayPhone"></span></p>
+                        
+                        <!-- 🆕 NEW: Delivery Status Container -->
+                        <div id="deliveryStatusContainer" class="delivery-status-container" style="display: none;">
+                            <div class="delivery-status">
+                                <span id="deliveryMethodIcon">📱</span>
+                                <span id="deliveryMethodText">SMS/WhatsApp</span>
+                            </div>
+                            <div class="delivery-note">
+                                <small id="deliveryNote">Check both SMS and WhatsApp for your OTP</small>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="otp-debug" id="otpDebug"></div>
                     
                     <!-- Name Input Container -->
-                    <div id="nameInputContainer" class="input-group">
+                    <div id="nameInputContainer" class="input-group" style="display: none;">
                         <i class="fas fa-user"></i>
                         <input type="text" id="fullName" placeholder="Enter your full name">
                     </div>
@@ -94,14 +108,36 @@
                         <i class="fas fa-lock"></i>
                         <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
                     </div>
-                    <button id="verifyOtpBtn" class="btn btn-primary">
-                        <i class="fas fa-check"></i>
-                        Verify OTP
-                    </button>
-                    <button id="resendOtpBtn" class="btn btn-secondary">
-                        <i class="fas fa-redo"></i>
-                        Resend OTP
-                    </button>
+                    
+                    <div class="otp-actions">
+                        <button id="verifyOtpBtn" class="btn btn-primary" disabled>
+                            <i class="fas fa-check"></i>
+                            Verify OTP
+                        </button>
+                        <button id="resendOtpBtn" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i>
+                            Resend OTP
+                        </button>
+                    </div>
+                    
+                    <!-- 🆕 NEW: OTP Help Section -->
+                    <div class="otp-help">
+                        <details class="help-details">
+                            <summary>
+                                <i class="fas fa-question-circle"></i>
+                                Not receiving OTP?
+                            </summary>
+                            <div class="help-content">
+                                <ul>
+                                    <li>📱 Check both SMS and WhatsApp messages</li>
+                                    <li>🕐 Wait for 1-2 minutes for delivery</li>
+                                    <li>📶 Ensure you have good network connectivity</li>
+                                    <li>🔄 Try clicking "Resend OTP" if needed</li>
+                                    <li>📞 Contact support if issue persists</li>
+                                </ul>
+                            </div>
+                        </details>
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,6 +156,7 @@
                         <div class="user-details">
                             <strong id="userFullName">User Name</strong>
                             <div id="verifiedPhone">Phone Number</div>
+                            <small id="memberSince">Member since today</small>
                         </div>
                         <button id="logoutBtn" class="btn-link">
                             <i class="fas fa-sign-out-alt"></i>
@@ -164,13 +201,13 @@
                         </select>
                     </div>
                     
-                    <button id="predictBtn" class="btn btn-primary">
+                    <button id="predictBtn" class="btn btn-primary" disabled>
                         <i class="fas fa-chart-line"></i>
                         Predict My Rank & Colleges
                     </button>
                     
                     <!-- Results Display -->
-                    <div id="resultsContainer" class="results-container">
+                    <div id="resultsContainer" class="results-container" style="display: none;">
                         <!-- Rank Results -->
                         <div class="result-card">
                             <div class="result-header">
@@ -253,7 +290,7 @@
         <!-- Toast Notifications -->
         <div id="toast" class="toast"></div>
         
-        <!-- Footer with Contact - NEW ADDITION -->
+        <!-- Footer with Contact -->
         <footer class="app-footer">
             <div class="footer-content">
                 <div class="footer-brand">
