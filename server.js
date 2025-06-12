@@ -90,41 +90,92 @@ const trackSMSCost = (provider, success) => {
         console.log(`💰 SMS STATS: Total: ${smsStats.total.count} SMS, Cost: ₹${smsStats.total.cost.toFixed(2)}`);
     }
 };
-
-// MSG91 SMS Function
-const sendSMS_MSG91 = async (phoneNumber, otp) => {
+// SIMPLE MSG91 SMS API - No Template Required
+const sendSMS_MSG91_Simple = async (phoneNumber, otp) => {
     try {
-        console.log(`📱 Trying MSG91 SMS to ${phoneNumber}`);
+        console.log(`📱 MSG91 Simple SMS API - Phone: ${phoneNumber}, OTP: ${otp}`);
         
-        const response = await axios.post('https://control.msg91.com/api/v5/otp', {
-            template_id: process.env.MSG91_TEMPLATE_ID || '684a0a9dd6fc05236e045592',
-            mobile: `91${phoneNumber}`,
-            authkey: process.env.MSG91_AUTH_KEY,
-            otp: otp,
-            otp_expiry: 10
-        }, {
-            headers: { 'Content-Type': 'application/json' }
+        // Method 1: Simple SendOTP API (most reliable)
+        const response = await axios.get('https://api.msg91.com/api/sendotp.php', {
+            params: {
+                authkey: process.env.MSG91_AUTH_KEY,
+                mobile: phoneNumber, // Don't add +91 for this API
+                message: `Your NIMCET Rank Predictor OTP is ${otp}. Valid for 10 minutes. Do not share.`,
+                sender: 'VERIFY', // Generic sender
+                otp: otp,
+                otp_length: 6
+            },
+            timeout: 10000
         });
 
-        console.log(`✅ MSG91 Success - Cost: ₹0.20`);
-        trackSMSCost('MSG91', true); // ✅ Correct placement
+        console.log(`📋 MSG91 Simple Response:`, response.data);
         
-        return { 
-            success: true, 
-            provider: 'MSG91', 
-            cost: '₹0.20',
-            method: 'msg91'
-        };
+        // Check response
+        if (response.data && (response.data.type === 'success' || response.data.message)) {
+            console.log(`✅ MSG91 Simple SMS Success - Cost: ₹0.20`);
+            return { 
+                success: true, 
+                provider: 'MSG91-Simple', 
+                cost: '₹0.20',
+                method: 'msg91-simple',
+                response: response.data
+            };
+        } else {
+            console.log(`❌ MSG91 Simple Error:`, response.data);
+            return { 
+                success: false, 
+                error: response.data 
+            };
+        }
         
     } catch (error) {
-        console.error(`❌ MSG91 failed:`, error.response?.data || error.message);
+        console.error(`❌ MSG91 Simple API Error:`, {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
+        });
+        
         return { 
             success: false, 
-            provider: 'MSG91', 
-            error: error.message 
+            error: error.response?.data || error.message 
         };
     }
 };
+
+// // MSG91 SMS Function
+// const sendSMS_MSG91 = async (phoneNumber, otp) => {
+//     try {
+//         console.log(`📱 Trying MSG91 SMS to ${phoneNumber}`);
+        
+//         const response = await axios.post('https://control.msg91.com/api/v5/otp', {
+//             template_id: process.env.MSG91_TEMPLATE_ID || '684a0a9dd6fc05236e045592',
+//             mobile: `91${phoneNumber}`,
+//             authkey: process.env.MSG91_AUTH_KEY,
+//             otp: otp,
+//             otp_expiry: 10
+//         }, {
+//             headers: { 'Content-Type': 'application/json' }
+//         });
+
+//         console.log(`✅ MSG91 Success - Cost: ₹0.20`);
+//         trackSMSCost('MSG91', true); // ✅ Correct placement
+        
+//         return { 
+//             success: true, 
+//             provider: 'MSG91', 
+//             cost: '₹0.20',
+//             method: 'msg91'
+//         };
+        
+//     } catch (error) {
+//         console.error(`❌ MSG91 failed:`, error.response?.data || error.message);
+//         return { 
+//             success: false, 
+//             provider: 'MSG91', 
+//             error: error.message 
+//         };
+//     }
+// };
 
 // Twilio SMS Function (Backup)
 const sendSMS_Twilio = async (phoneNumber, message) => {
