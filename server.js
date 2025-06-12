@@ -1590,53 +1590,6 @@ app.post('/api/admin/reset-limit', async (req, res) => {
     }
 });
 
-// 🧪 TEMPORARY: Test Fast2SMS Integration
-app.get('/test-fast2sms', async (req, res) => {
-    try {
-        const { phone } = req.query;
-        
-        if (!phone) {
-            return res.json({ 
-                error: 'Add ?phone=YOUR_10_DIGIT_NUMBER to URL',
-                example: 'https://your-app.onrender.com/test-fast2sms?phone=9876543210'
-            });
-        }
-        
-        // Validate phone number
-        if (!/^[6-9]\d{9}$/.test(phone)) {
-            return res.json({ 
-                error: 'Invalid phone number. Must be 10 digits starting with 6-9',
-                provided: phone
-            });
-        }
-        
-        const testOTP = Math.floor(100000 + Math.random() * 900000).toString();
-        const testMessage = `Your NIMCET Rank Predictor OTP is: ${testOTP}. Valid for 10 minutes.`;
-        
-        console.log(`🧪 Testing Fast2SMS with phone: ${phone}`);
-        
-        const result = await sendSMS(phone, testMessage);
-        
-        res.json({
-            success: result.success,
-            provider: result.provider,
-            cost: result.cost,
-            method: result.method,
-            message: result.success ? 'SMS sent successfully!' : 'SMS failed',
-            error: result.error,
-            testOTP: testOTP,
-            checkPhone: 'Check your phone/WhatsApp for SMS',
-            timestamp: new Date().toISOString()
-        });
-        
-    } catch (error) {
-        console.error('Test Fast2SMS Error:', error);
-        res.status(500).json({ 
-            error: error.message,
-            timestamp: new Date().toISOString()
-        });
-    }
-});
 
 // Health check endpoint (Updated for MongoDB)
 app.get('/health', async (req, res) => {
